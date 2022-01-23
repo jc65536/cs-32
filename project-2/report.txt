@@ -1,0 +1,401 @@
+Jason Cheng
+Professor Smallberg
+CS 32
+2022-01-22
+
+
+# Description of Linked List Implementation
+
+My doubly-linked list is circular, with both the first and last nodes connected
+to a dummy node called dm, so dm->next refers to the head node, and dm->prev
+refers to the tail node. Each node contains a KeyType and a ValueType member to
+represent the mapping, as well as node pointers to the previous and next nodes.
+The list itself is always sorted by key since the insert function always inserts
+new nodes in order.
+
+Diagram:
+
+                  +-------------+
+                  |     Map     |
+                  +-------------+
++---------------->|     dm      |<----------------+
+|                 +------+------+                 |
+|        +--------+ next | prev +--------+        |
+|        |        +------+------+        |        |
+|        v                               v        |
+|  +-----------+   +-----------+   +-----------+  |
+|  |   Node    |   |   Node    |   |   Node    |  |
+|  +-----------+   +-----------+   +-----------+  |
+|  | key/value |   | key/value |   | key/value |  |
+|  +-----------+   +-----------+   +-----------+  |
++--+   prev    |<--+   prev    |<--+   prev    |  |
+   +-----------+   +-----------+   +-----------+  |
+   |   next    +-->|   next    +-->|   next    +--+
+   +-----------+   +-----------+   +-----------+
+
+
+# Pseudocode
+
+Some public and private functions have the same name. I've differentiated them
+here with a number to the right of their function names.
+
+bool merge(const Map& m1, const Map& m2, Map& result);
+    in case of aliases, recursively call merge with a copy of m1 or m2
+    store a copy of m1 into result
+    erase any nodes in result whose key exists in m2 with a different value
+    copy any nodes from m2 whose key doesn't exist in m1 to result
+    return true if we had to erase any nodes from result
+
+void reassign(const Map& m, Map& result);
+    make a temporary copy of the first node's value
+    store each node's value into the previous node
+    store the first node's value into the tail node
+
+Map(const Map &m); (Copy constructor)
+    default-initialize count and dm
+    for each node n in m starting from its head node:
+        insert a copy of n after own tail node
+
+~Map(); (Destructor)
+    make the tail node point to nullptr so we can detect termination
+    move dm forward and delete the previous node until we reach the tail
+    delete dm
+
+bool get(const KeyType &key, ValueType &value) const;
+    return false if we cannot find a node whose key is equal to key
+    otherwise, copy the node's value into value and return true
+
+bool get(int i, KeyType &key, ValueType &value) const;
+    from the head node, follow the next pointer i times
+    copy the current node's data into key and value
+
+bool insert(const KeyType &key, const ValueType &value);                    (1)
+    return false if we can find a node whose key is equal to key
+    otherwise, create a new node constructed from key and value
+    insert (2) this new node before the first node whose key is greater than key
+    return true
+
+bool update(const KeyType &key, const ValueType &value);
+    return false if we can't find a node whose key is equal to key
+    otherwise, set the value of that node to value and return true
+
+bool erase(const KeyType &key);                                             (1)
+    return false if we can't find a node whose key is equal to key
+    otherwise, erase (2) that node
+
+void swap(Map &other);
+    swap the dummy node pointers
+    swap the counts
+
+bool findNode(const KeyType &key, Node *&n) const;
+    use n to travel the list until n->key is not less than key
+    return true if n is an exact match for key (dm is never an exact match)
+
+void insert(Node *n, Node *to);                                             (2)
+    set n's prev and next pointers to the node before to and to, respectively
+    make the node before to point to n
+    make to point to n
+    increment counter
+
+void erase(Node *n);                                                        (2)
+    make the node before n point to the node after n, and vice versa
+    delete n
+    decrement counter
+
+
+# Test Cases
+
+bool empty() const;
+    Map m;
+
+    // Empty
+    assert(m.empty());
+
+    // Non-empty
+    m.insert(k(0), v(0));
+    assert(!m.empty());
+
+int size() const;
+    Map m;
+
+    // 0 size
+    assert(m.size() == 0);
+
+    // Some size
+    m.insert(k(2), v(2));
+    for (int i = 0; i < 5; i++)
+        m.insert(k(i), v(i));
+    assert(m.size() == 5);
+
+    // Size doesn't become negative
+    m.erase(k(2));
+    for (int i = 0; i < 99; i++)
+        m.erase(k(i));
+    assert(m.size() == 0);
+
+bool contains(const KeyType &key) const;
+    Map m;
+    for (int i = 0; i < 5; i++)
+        m.insert(k(i), v(i));
+
+    // Key exists
+    assert(m.contains(k(2)));
+
+    // Key doesn't exist
+    m.erase(k(2));
+    assert(!m.contains(k(2)));
+
+bool get(const KeyType &key, ValueType &value) const;
+    Map m;
+    ValueType value = v(-1);
+
+    // Key doesn't exist
+    assert(!m.get(k(0), value));
+    assert(value == v(-1));
+
+    // Key exists
+    m.insert(k(0), v(0));
+    assert(m.get(k(0), value));
+    assert(value == v(0));
+
+bool get(int i, KeyType &key, ValueType &value) const;
+    Map m;
+    KeyType key = k(-1);
+    ValueType value = v(-1);
+
+    // Empty map
+    assert(!m.get(0, key, value));
+    assert(key == k(-1) && value == v(-1));
+
+    // i < 0
+    for (int i = 0; i < 5; i++)
+        m.insert(k(i), v(i));
+    assert(!m.get(-1, key, value));
+    assert(key == k(-1) && value == v(-1));
+
+    // i >= size
+    assert(!m.get(5, key, value));
+    assert(key == k(-1) && value == v(-1));
+
+    // Able to get
+    assert(m.get(2, key, value));
+    assert(key == k(2) && value == v(2));
+
+bool insert(const KeyType &key, const ValueType &value);
+    Map m;
+
+    // Able to add
+    assert(m.insert(k(0), v(0)));
+    m.dump(); // (1) {aa: 0}
+
+    // Added pairings are sorted by key
+    for (int i = 4; i > 0; i -= 2)
+        m.insert(k(i), v(i));
+    for (int i = 1; i < 5; i += 2)
+        m.insert(k(i), v(i));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+
+    // Can't add due to conflict
+    assert(!m.insert(k(0), v(1)));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+
+bool update(const KeyType &key, const ValueType &value);
+    Map m;
+    for (int i = 0; i < 5; i++)
+        m.insert(k(i), v(i));
+
+    // Able to update
+    assert(m.update(k(2), v(99)));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 99, ad: 3, ae: 4}
+
+    // Can't update
+    assert(!m.update(k(99), v(99)));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 99, ad: 3, ae: 4}
+
+bool insertOrUpdate(const KeyType &key, const ValueType &value);
+    Map m;
+    for (int i = 1; i < 5; i++)
+        m.insert(k(i), v(i));
+
+    // Insert
+    assert(m.insertOrUpdate(k(0), v(0)));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+
+    // Update
+    assert(m.insertOrUpdate(k(2), v(99)));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 99, ad: 3, ae: 4}
+
+bool erase(const KeyType &key);
+    Map m;
+    m.insert(k(0), v(0));
+
+    // Key exists
+    assert(m.erase(k(0)));
+    m.dump(); // (0) {}
+
+    // Key doesn't exist
+    assert(!m.erase(k(2)));
+    m.dump(); // (0) {}
+
+void swap(Map &other);
+    Map m, n;
+    for (int i = 0; i < 3; i++)
+        m.insert(k(i), v(i));
+    for (int i = 3; i < 5; i++)
+        n.insert(k(i), v(i));
+
+    // Swap works
+    m.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+    n.dump(); // (2) {ad: 3, ae: 4}
+    m.swap(n);
+    m.dump(); // (2) {ad: 3, ae: 4}
+    n.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+
+    // Ensure swapped Maps are independent
+    for (int i = 0; i < 3; i++)
+        n.update(k(i), v(99));
+    m.dump(); // (2) {ad: 3, ae: 4}
+    n.dump(); // (3) {aa: 99, ab: 99, ac: 99}
+
+Copy constructor
+    Map m;
+    for (int i = 0; i < 5; i++)
+        m.insert(k(i), v(i));
+
+    // Copy works
+    Map n(m);
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+    n.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+
+    // Changes to the copy don't affect the original
+    n.insertOrUpdate(k(2), v(99));
+    n.erase(k(0));
+    m.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+    n.dump(); // (5) {ab: 1, ac: 99, ad: 3, ae: 4}
+
+Copy assignment operator
+    Map m, n;
+    for (int i = 0; i < 3; i++)
+        m.insert(k(i), v(i));
+    for (int i = 3; i < 5; i++)
+        n.insert(k(i), v(i));
+
+    // Copy works
+    m.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+    n.dump(); // (2) {ad: 3, ae: 4}
+    m = n;
+    m.dump(); // (2) {ad: 3, ae: 4}
+    n.dump(); // (2) {ad: 3, ae: 4}
+
+    // Changes to the copy don't affect original
+    n.insert(k(2), v(2));
+    for (int i = 2; i < 5; i++)
+        n.erase(k(i));
+    m.dump(); // (2) {ad: 3, ae: 4}
+    n.dump(); // (0) {}
+
+bool merge(const Map& m1, const Map& m2, Map& result);
+    Map m, n, res;
+
+    // m1, m2 are disjoint
+    for (int i = 0; i < 3; i++)
+        m.insert(k(i), v(i));
+    for (int i = 3; i < 5; i++)
+        n.insert(k(i), v(i));
+    assert(merge(m, n, res));
+    res.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+
+    // m1, m2 overlap, and overlapped pairings are equal
+    n.insert(k(2), v(2));
+    assert(merge(m, n, res));
+    res.dump(); // (5) {aa: 0, ab: 1, ac: 2, ad: 3, ae: 4}
+
+    // m1, m2 overlap, and some overlapped parings aren't equal
+    n.insert(k(1), v(99));
+    assert(!merge(m, n, res));
+    res.dump(); // (4) {aa: 0, ac: 2, ad: 3, ae: 4}
+
+    // m1, m2 completely overlap, with no pairings equal
+    n = Map();
+    for (int i = 0; i < 3; i++)
+        n.insert(k(i), v(99));
+    assert(!merge(m, n, res));
+    res.dump(); // (0) {}
+
+    // m1 is empty
+    n = Map();
+    assert(merge(n, m, res));
+    res.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+
+    // m2 is empty
+    assert(merge(m, n, res));
+    res.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+
+    // m1 and m2 are empty
+    assert(merge(n, n, res));
+    res.dump(); // (0) {}
+
+    // m1 is m2 is result
+    assert(merge(m, m, m));
+    m.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+
+    // m1 is result
+    n = Map();
+    for (int i = 2; i < 5; i++)
+        n.insert(k(i), v(i));
+    n.insert(k(1), v(99));
+    assert(!merge(m, n, m));
+    m.dump(); // (4) {aa: 0, ac: 2, ad: 3, ae: 4}
+
+    // m2 is result
+    m = Map();
+    for (int i = 0; i < 3; i++)
+        m.insert(k(i), v(i));
+    assert(!merge(m, n, n));
+    n.dump(); // (4) {aa: 0, ac: 2, ad: 3, ae: 4}
+
+    // m1 is m2
+    res = Map();
+    assert(merge(m, m, res));
+    res.dump(); // (3) {aa: 0, ab: 1, ac: 2}
+
+void reassign(const Map& m, Map& result);
+    Map m, res;
+
+    // Typical case
+    for (int i = 0; i < 3; i++)
+        m.insert(k(i), v(i));
+    m.update(k(0), v(1));
+    reassign(m, res);
+    res.dump(); // (3) {aa: 1, ab: 2, ac: 1}
+
+    // result is non-empty
+    m = Map();
+    for (int i = 0; i < 4; i++)
+        m.insert(k(i), v(i));
+    reassign(m, res);
+    res.dump(); // (4) {aa: 1, ab: 2, ac: 3, ad: 0}
+
+    // m has only one element
+    m = Map();
+    m.insert(k(0), v(0));
+    reassign(m, res);
+    res.dump(); // (1) {aa: 0}
+
+    // m is empty
+    m = Map();
+    reassign(m, res);
+    res.dump(); // (0) {}
+
+    // m is result
+    for (int i = 0; i < 3; i++)
+        m.insert(k(i), v(i));
+    for (int i = 0; i < 3; i++) {
+        reassign(m, m);
+        m.dump();
+    }
+    /*
+    (3) {aa: 1, ab: 2, ac: 0}
+    (3) {aa: 2, ab: 0, ac: 1}
+    (3) {aa: 0, ab: 1, ac: 2}
+    */

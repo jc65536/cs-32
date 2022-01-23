@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. ../global
+
+g32 -o ../bin/p2 testMap.cpp Map.cpp && echo "Compiled Successfully" && ../bin/p2
