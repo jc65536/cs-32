@@ -3,9 +3,11 @@
 
 #include <string>
 
-#define INT_TO_STRING 0
+#define INT_TO_STRING 1
 
 #if INT_TO_STRING
+using KeyType = int;
+using ValueType = std::string;
 #else
 using KeyType = std::string;
 using ValueType = double;
@@ -19,7 +21,7 @@ public:
 
     ~Map();
 
-    Map &operator=(Map m);
+    Map &operator=(const Map &m);
 
     bool empty() const; // Return true if the map is empty, otherwise false.
 

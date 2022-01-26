@@ -88,8 +88,9 @@ Map::~Map() {
     delete dm;
 }
 
-Map &Map::operator=(Map m) {
-    swap(m);
+Map &Map::operator=(const Map &m) {
+    Map copy(m);
+    swap(copy);
     return *this;
 }
 
