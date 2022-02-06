@@ -1,5 +1,5 @@
 int countContains(const double a1[], int n1, const double a2[], int n2) {
-    if (n2 <= 0) // C(n1, 0)
+    if (n2 <= 0)
         return 1;
     if (n1 < n2)
         return 0;
