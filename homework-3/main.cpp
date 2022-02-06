@@ -3,6 +3,10 @@
 #include <string>
 using namespace std;
 
+bool somePredicate(double x) {
+    return x;
+}
+
 #include "sport.cpp"
 #include "linear.cpp"
 #include "tree.cpp"
