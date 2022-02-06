@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. ../global
+
+g32 -o ../bin/hw2 eval.cpp Map.cpp && echo "Compiled successfully." && ../bin/hw2

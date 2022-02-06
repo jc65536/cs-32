@@ -1,0 +1,18 @@
+2.
+The first twelve (r, c) coordinates popped off the stack are:
+(4, 6), (3, 6), (5, 6), (5, 7), (5, 8), (6, 8),
+(7, 8), (8, 8), (8, 7), (6, 6), (4, 5), (4, 4)
+
+4.
+The first twelve (r, c) coordinates popped from the queue are:
+(4, 6), (4, 5), (5, 6), (3, 6), (4, 4), (6, 6),
+(5, 7), (4, 3), (5, 4), (5, 8), (4, 2), (6, 4)
+
+The stack-based algorithm exhausts the possibilities in one direction before
+trying the next direction. This behavior is due to the stack only being able to
+see the last-added coordinates, so it keeps branching off of it until no further
+path exists.
+
+On the other hand, the queue-based algorithm pops all the nearest
+neighbors before branching out further. This is because the queue pops from the
+front, so the newly added neighbors aren't processed until later.

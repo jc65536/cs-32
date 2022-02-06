@@ -1,0 +1,13 @@
+Initialize the operand stack to empty
+For each character ch in the postfix string
+    if ch is an operand
+        push the value that ch represents onto the operand stack
+    else // ch is a binary operator
+        set operand2 to the top of the operand stack
+        pop the stack
+        set operand1 to the top of the operand stack
+        pop the stack
+        apply the operation that ch represents to operand1 and
+            operand2, and push the result onto the stack
+When the loop is finished, the operand stack will contain one item,
+  the result of evaluating the expression

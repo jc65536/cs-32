@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. ../global
+
+g32 -o ../bin/mid1 pod.cpp && echo "Compiled successfully." && ../bin/mid1
