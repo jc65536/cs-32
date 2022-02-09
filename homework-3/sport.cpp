@@ -1,10 +1,16 @@
+#include <string>
+#include <iostream>
+using namespace std;
+
 class Sport {
 public:
     Sport(string sportName) : sportName(sportName) {}
     string name() const {
         return sportName;
     };
-    virtual bool isOutdoor() const = 0;
+    virtual bool isOutdoor() const {
+        return true;
+    }
     virtual string icon() const = 0;
     void destructorMsg(string className, string addendum = "") const {
         cout << "Destroying the " << className
