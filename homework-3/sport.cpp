@@ -26,9 +26,6 @@ private:
 class Snowboarding : public Sport {
 public:
     Snowboarding(string sportName) : Sport(sportName) {}
-    bool isOutdoor() const {
-        return true;
-    }
     string icon() const {
         return "a descending snowboarder";
     }
@@ -41,9 +38,6 @@ class Biathlon : public Sport {
 public:
     Biathlon(string sportName, double distance) : Sport(sportName),
                                                   distance(distance) {}
-    bool isOutdoor() const {
-        return true;
-    }
     string icon() const {
         return "a skier with a rifle";
     }
