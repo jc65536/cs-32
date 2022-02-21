@@ -107,9 +107,9 @@ int StudentWorld::move() {
                 props.right = xEnd1 > xEnd2;
                 actor2->bonk(actor1, props);
             } else if (actor1->movable() && !actor2->passable()) {
-                actor1->applySpaceProps(calcSpace(actor1, actor2));
+                actor1->addSurroundings(calcSpace(actor1, actor2));
             } else if (!actor1->passable() && actor2->movable()) {
-                actor2->applySpaceProps(calcSpace(actor2, actor1));
+                actor2->addSurroundings(calcSpace(actor2, actor1));
             }
         }
     }
@@ -117,4 +117,6 @@ int StudentWorld::move() {
 }
 
 void StudentWorld::cleanUp() {
+    for (Actor *actor : actors)
+        delete actor;
 }

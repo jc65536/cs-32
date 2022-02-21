@@ -13,15 +13,22 @@ Actor::Actor(StudentWorld &world, int imageId, double startX, double startY,
     : GraphObject(imageId, startX, startY, startDirection, depth, size),
       world(world) {}
 
-void Actor::applySpaceProps(Surroundings newProps) {
+void Actor::addSurroundings(Surroundings newProps) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             Surroundings::Pair &s = spaceProps.data[i][j],
-                             &n = newProps.data[i][j];
-            if (!s.actor || n.actor && n.space < s.space)
+                               &n = newProps.data[i][j];
+            if (!s.actor || n.actor && n.dist < s.dist)
                 s = n;
         }
     }
+}
+
+void Actor::print() {
+    std::cerr << "==== Actor ====" << std::endl;
+    std::cerr << "Coordinates: (" << getX() << ", " << getY() << ")" << std::endl;
+    std::cerr << "Passable: " << passable() << std::endl;
+    std::cerr << "Movable: " << movable() << std::endl;
 }
 
 //==============================================================================
@@ -43,25 +50,49 @@ bool Movable::checkSpace() {
            ady = std::abs(dy);
     if (dx < 0) {
         if (dy < 0) {
-            return adx <= spaceProps.midLeft.space && ady <= spaceProps.botMid.space && adx + ady <= spaceProps.botLeft.space;
+            return adx <= spaceProps.midLeft.dist && ady <= spaceProps.botMid.dist && adx + ady <= spaceProps.botLeft.dist;
         } else if (dy > 0) {
-            return adx <= spaceProps.midLeft.space && ady < spaceProps.topMid.space && adx + ady <= spaceProps.topLeft.space;
+            return adx <= spaceProps.midLeft.dist && ady < spaceProps.topMid.dist && adx + ady <= spaceProps.topLeft.dist;
         } else {
-            return adx <= spaceProps.midLeft.space;
+            if (adx <= spaceProps.midLeft.dist) {
+                return true;
+            } else {
+                if (spaceProps.midLeft.actor)
+                    spaceProps.midLeft.actor->bonk(this, BonkProps{false, false, false, true});
+                return false;
+            }
         }
     } else if (dx > 0) {
         if (dy < 0) {
-            return adx <= spaceProps.midRight.space && ady <= spaceProps.botMid.space && adx + ady <= spaceProps.botRight.space;
+            return adx <= spaceProps.midRight.dist && ady <= spaceProps.botMid.dist && adx + ady <= spaceProps.botRight.dist;
         } else if (dy > 0) {
-            return adx <= spaceProps.midRight.space && ady <= spaceProps.topMid.space && adx + ady <= spaceProps.topRight.space;
+            return adx <= spaceProps.midRight.dist && ady <= spaceProps.topMid.dist && adx + ady <= spaceProps.topRight.dist;
         } else {
-            return adx <= spaceProps.midRight.space;
+            if (adx <= spaceProps.midRight.dist) {
+                return true;
+            } else {
+                if (spaceProps.midRight.actor)
+                    spaceProps.midRight.actor->bonk(this, BonkProps{true, false, false, false});
+                return false;
+            }
         }
     } else {
         if (dy < 0) {
-            return ady <= spaceProps.botMid.space;
+            if (ady <= spaceProps.botMid.dist) {
+                return true;
+            } else {
+                if (spaceProps.botMid.actor)
+                    spaceProps.botMid.actor->bonk(this, BonkProps{false, false, true, false});
+                return false;
+            }
         } else if (dy > 0) {
-            return ady <= spaceProps.topMid.space;
+            if (ady <= spaceProps.topMid.dist) {
+                return true;
+            } else {
+                if (spaceProps.topMid.actor)
+                    spaceProps.topMid.actor->bonk(this, BonkProps{false, true, false, false});
+                return false;
+            }
         } else {
             return true;
         }
@@ -119,7 +150,6 @@ void Peach::doSomething() {
 
     if (dx != 0 || dy != 0)
         moveTo(getX() + dx, getY() + dy);
-    
     spaceProps.clear();
 }
 
@@ -131,23 +161,17 @@ void Peach::bonk(Actor *other, BonkProps props) {
 
 Block::Block(StudentWorld &world, double startX, double startY) : Actor(world, IID_BLOCK, startX, startY, 0, 1.0, 2) {}
 
-void Block::doSomething() {
+void Block::bonk(Actor *other, BonkProps props) {
+    if (!props.top) {
+        getWorld().playSound(SOUND_PLAYER_BONK);
+        std::cerr << "SOUND PLAYER BONK" << std::endl;
+    }
 }
 
-Pipe::Pipe(StudentWorld &world, double startX, double startY) : Actor(world, IID_PIPE, startX, startY, 0, 1.0, 2) {}
-void Pipe::doSomething() {}
+Pipe::Pipe(StudentWorld &world, double startX, double startY) : Block(world, startX, startY) {}
 
 //==============================================================================
 // Utility functions
-
-void incrementSpace(Surroundings::Pair &data, Actor *actor, double space) {
-    if (!data.actor) {
-        data.actor = actor;
-        data.space = space;
-    } else {
-        data.space += space;
-    }
-}
 
 Surroundings calcSpace(Actor *actor1, Actor *actor2) {
     Surroundings ret;
@@ -158,55 +182,37 @@ Surroundings calcSpace(Actor *actor1, Actor *actor2) {
            xStart2 = actor2->getX(),
            yStart2 = actor2->getY(),
            xEnd2 = xStart2 + SPRITE_WIDTH,
-           yEnd2 = yStart2 + SPRITE_HEIGHT,
-           space;
-    if (xEnd2 <= xStart1) {
-        space = xStart1 - xEnd2;
-        if (yEnd2 > yEnd1) {
-            incrementSpace(ret.topLeft, actor2, space);
-        }
-        if (yStart2 < yStart1) {
-            incrementSpace(ret.botLeft, actor2, space);
-        }
-        if (yEnd2 > yStart1 && yStart2 < yEnd1) {
-            incrementSpace(ret.midLeft, actor2, space);
-        }
-    }
-    if (xStart2 >= xEnd1) {
-        space = xStart2 - xEnd1;
-        if (yEnd2 > yEnd1) {
-            incrementSpace(ret.topRight, actor2, space);
-        }
-        if (yStart2 < yStart1) {
-            incrementSpace(ret.botRight, actor2, space);
-        }
-        if (yEnd2 > yStart1 && yStart2 < yEnd1) {
-            incrementSpace(ret.midRight, actor2, space);
-        }
-    }
-    if (yStart2 >= yEnd1) {
-        space = yStart2 - yEnd1;
-        if (xEnd2 > xEnd1) {
-            incrementSpace(ret.topRight, actor2, space);
-        }
-        if (xStart2 < xStart1) {
-            incrementSpace(ret.topLeft, actor2, space);
-        }
-        if (xEnd2 > xStart1 && xStart2 < xEnd1) {
-            incrementSpace(ret.topMid, actor2, space);
+           yEnd2 = yStart2 + SPRITE_HEIGHT;
+
+    // left, middle, right
+    bool column[3] = {xEnd2 <= xStart1, false, xStart2 >= xEnd1};
+    // top, middle, bottom
+    bool row[3] = {yStart2 >= yEnd1, false, yEnd2 <= yStart1};
+    // left, middle, right
+    bool colInRow[3] = {xStart2<xStart1, xEnd2> xStart1 && xStart2<xEnd1, xEnd2> xEnd1};
+    // top, middle, bottom
+    bool rowInCol[3] = {yEnd2 > yEnd1, yEnd2 > yStart1 && yStart2 < yEnd1, yStart2 < yStart1};
+
+    double xDist[] = {xStart1 - xEnd2, 0, xStart2 - xEnd1};
+    double yDist[] = {yStart2 - yEnd1, 0, yStart1 - yEnd2};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            bool yDecision = row[i] && colInRow[j];
+            bool xDecision = column[j] && rowInCol[i];
+            if (xDecision || yDecision) {
+                Surroundings::Pair &data = ret.data[i][j];
+                data.actor = actor2;
+                data.dist = yDecision * yDist[i] + xDecision * xDist[j];
+            }
         }
     }
-    if (yEnd2 <= yStart1) {
-        space = yStart1 - yEnd2;
-        if (xEnd2 > xEnd1) {
-            incrementSpace(ret.botRight, actor2, space);
-        }
-        if (xStart2 < xStart1) {
-            incrementSpace(ret.botLeft, actor2, space);
-        }
-        if (xEnd2 > xStart1 && xStart2 < xEnd1) {
-            incrementSpace(ret.botMid, actor2, space);
-        }
-    }
+
+    /*
+    (xe2 <= xs1 && ye2 > ye1) * left + (ys2 >= ye1 && xs2 < xs1) * top | (ys2 >= ye1 && xe2 > xs1 && xs2 < xe1) * top | (xs2 >= xe1 && ye2 > ye1) * right + (ys2 >= ye1 && xe2 > xe1) * right
+    (xe2 <= xs1 && ye2 > ys1 && ys2 < ye1) * left                      | -1                                           | (xs2 >= xe1 && ye2 > ys1 && ys2 < ye1) * right
+    (xe2 <= xs1 && ys2 < ys1) * left + (ye2 <= ys1 && xs2 < xs1) * bot | (ye2 <= ys1 && xe2 > xs1 && xs2 < xe1) * bot | (xs2 >= xe1 && ys2 < ys1) * right + (ye2 <= ys1 && xe2 > xe1) * bot
+    */
+
     return ret;
 }

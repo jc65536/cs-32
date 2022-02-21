@@ -14,16 +14,16 @@ struct BonkProps {
 
 struct Surroundings {
     struct Pair {
-        double space;
+        double dist;
         Actor *actor;
     };
 
     Pair &topLeft, &topMid, &topRight,
         &midLeft, &midRight,
         &botLeft, &botMid, &botRight;
-    Pair data[3][3] = {{{-1, nullptr}, {-1, nullptr}, {-1, nullptr}},
-                       {{-1, nullptr}, {-1, nullptr}, {-1, nullptr}},
-                       {{-1, nullptr}, {-1, nullptr}, {-1, nullptr}}};
+    Pair data[3][3] = {{{0, nullptr}, {0, nullptr}, {0, nullptr}},
+                       {{0, nullptr}, {0, nullptr}, {0, nullptr}},
+                       {{0, nullptr}, {0, nullptr}, {0, nullptr}}};
     Surroundings()
         : topLeft(data[0][0]), topMid(data[0][1]), topRight(data[0][2]),
           midLeft(data[1][0]), midRight(data[1][2]),
@@ -31,14 +31,14 @@ struct Surroundings {
     void clear() {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                data[i][j] = {-1, nullptr};
+                data[i][j] = {0, nullptr};
             }
         }
     }
     void print() {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                std::cerr << data[i][j].space << '\t';
+                std::cerr << data[i][j].dist << '\t';
             }
             std::cerr << std::endl;
         }
@@ -49,13 +49,16 @@ class Actor : public GraphObject {
 public:
     Actor(StudentWorld &world, int imageId, double startX, double startY,
           int startDirection, double size, int depth);
-    virtual void doSomething() = 0;
+    virtual void doSomething(){};
     virtual void bonk(Actor *other, BonkProps props) {}
 
     virtual bool passable() = 0;
     virtual bool movable() = 0;
+    virtual bool damageable() = 0;
 
-    void applySpaceProps(Surroundings newProps);
+    void addSurroundings(Surroundings newProps);
+
+    void print();
 
 protected:
     StudentWorld &getWorld() { return world; }
@@ -86,6 +89,7 @@ public:
     void bonk(Actor *other, BonkProps props);
 
     bool passable() { return true; }
+    bool damageable() { return true; }
 
     void commitBonk();
 
@@ -98,21 +102,18 @@ private:
 class Block : public Actor {
 public:
     Block(StudentWorld &world, double startX, double startY);
-    void doSomething();
+
+    void bonk(Actor *other, BonkProps props);
 
     // Property methods
     bool passable() { return false; }
     bool movable() { return false; }
+    bool damageable() { return false; }
 };
 
-class Pipe : public Actor {
+class Pipe : public Block {
 public:
     Pipe(StudentWorld &world, double startX, double startY);
-    void doSomething();
-
-    // Property methods
-    bool passable() { return false; }
-    bool movable() { return false; }
 };
 
 Surroundings calcSpace(Actor *actor1, Actor *actor2);

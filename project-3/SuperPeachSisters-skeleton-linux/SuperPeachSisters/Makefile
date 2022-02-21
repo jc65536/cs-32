@@ -17,7 +17,7 @@ PRODUCT = SuperPeachSisters
 all: $(PRODUCT)
 
 %.o: %.cpp $(HEADERS)
-	$(CC) -c $(STD) $(INCLUDES) $< -o $@
+	$(CC) -g -c $(STD) $(INCLUDES) $< -o $@
 
 $(PRODUCT): $(OBJECTS) 
 	$(CC) $(OBJECTS) $(LIBS) -o $@
