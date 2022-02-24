@@ -79,40 +79,32 @@ int StudentWorld::init() {
 }
 
 int StudentWorld::move() {
-    for (Actor *actor : actors) {
-        actor->doSomething();
-    }
     for (int i = 0; i + 1 < actors.size(); i++) {
         Actor *actor1 = actors[i];
         for (int j = i + 1; j < actors.size(); j++) {
             Actor *actor2 = actors[j];
-            double xStart1 = actor1->getX(),
-                   yStart1 = actor1->getY(),
-                   xEnd1 = xStart1 + SPRITE_WIDTH,
-                   yEnd1 = yStart1 + SPRITE_HEIGHT,
-                   xStart2 = actor2->getX(),
-                   yStart2 = actor2->getY(),
-                   xEnd2 = xStart2 + SPRITE_WIDTH,
-                   yEnd2 = yStart2 + SPRITE_HEIGHT;
-            if (xEnd2 > xStart1 && xStart2 < xEnd1 && yEnd2 > yStart1 && yStart2 < yEnd1) {
-                BonkProps props;
-                props.left = xStart2 < xStart1;
-                props.bot = yStart2 < yStart1;
-                props.top = yEnd2 > yEnd1;
-                props.right = xEnd2 > xEnd1;
-                actor1->bonk(actor2, props);
-                props.left = xStart1 < xStart2;
-                props.bot = yStart1 < yStart2;
-                props.top = yEnd1 > yEnd2;
-                props.right = xEnd1 > xEnd2;
-                actor2->bonk(actor1, props);
-            } else if (actor1->movable() && !actor2->passable()) {
-                actor1->addSurroundings(calcSpace(actor1, actor2));
-            } else if (!actor1->passable() && actor2->movable()) {
-                actor2->addSurroundings(calcSpace(actor2, actor1));
+            BonkProps props1, props2;
+            if (areColliding(actor1->getX(), actor1->getY(), actor2->getX(), actor2->getY(), &props1, &props2)) {
+                actor1->bonk(actor2, props1);
+                actor2->bonk(actor1, props2);
+                continue;
+            }
+
+            if (!actor1->passable() && actor2->movable()) {
+                actor1 = actors[j];
+                actor2 = actors[i];
+            }
+
+            if (actor1->movable() && !actor2->passable() && areNearby(actor1, actor2)) {
+                actor1->movable()->addNearbyActor(actor2);
             }
         }
     }
+
+    for (Actor *actor : actors) {
+        actor->doSomething();
+    }
+
     return GWSTATUS_CONTINUE_GAME;
 }
 

@@ -7,42 +7,10 @@
 
 class StudentWorld;
 class Actor;
+class Movable;
 
 struct BonkProps {
     bool left, bot, top, right;
-};
-
-struct Surroundings {
-    struct Pair {
-        double dist;
-        Actor *actor;
-    };
-
-    Pair &topLeft, &topMid, &topRight,
-        &midLeft, &midRight,
-        &botLeft, &botMid, &botRight;
-    Pair data[3][3] = {{{0, nullptr}, {0, nullptr}, {0, nullptr}},
-                       {{0, nullptr}, {0, nullptr}, {0, nullptr}},
-                       {{0, nullptr}, {0, nullptr}, {0, nullptr}}};
-    Surroundings()
-        : topLeft(data[0][0]), topMid(data[0][1]), topRight(data[0][2]),
-          midLeft(data[1][0]), midRight(data[1][2]),
-          botLeft(data[2][0]), botMid(data[2][1]), botRight(data[2][2]) {}
-    void clear() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                data[i][j] = {0, nullptr};
-            }
-        }
-    }
-    void print() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                std::cerr << data[i][j].dist << '\t';
-            }
-            std::cerr << std::endl;
-        }
-    }
 };
 
 class Actor : public GraphObject {
@@ -53,16 +21,13 @@ public:
     virtual void bonk(Actor *other, BonkProps props) {}
 
     virtual bool passable() = 0;
-    virtual bool movable() = 0;
+    virtual Movable *movable() = 0;
     virtual bool damageable() = 0;
-
-    void addSurroundings(Surroundings newProps);
 
     void print();
 
 protected:
     StudentWorld &getWorld() { return world; }
-    Surroundings spaceProps;
 
 private:
     StudentWorld &world;
@@ -71,15 +36,17 @@ private:
 class Movable : public virtual Actor {
 public:
     Movable() {}
-    virtual bool movable() { return true; };
+    virtual Movable *movable() { return this; };
+
+    void addNearbyActor(Actor *actor);
 
 protected:
     bool attemptMove(double dx, double dy);
 
     bool checkSpace();
 
-protected:
     double dx, dy;
+    std::vector<Actor *> nearbyActors;
 };
 
 class Peach : public Movable {
@@ -107,7 +74,7 @@ public:
 
     // Property methods
     bool passable() { return false; }
-    bool movable() { return false; }
+    Movable *movable() { return nullptr; }
     bool damageable() { return false; }
 };
 
@@ -116,6 +83,15 @@ public:
     Pipe(StudentWorld &world, double startX, double startY);
 };
 
-Surroundings calcSpace(Actor *actor1, Actor *actor2);
+inline double distance2(double x, double y) {
+    return x * x + y * y;
+}
+
+inline bool areNearby(Actor *actor1, Actor *actor2) {
+    return distance2(actor1->getX() - actor2->getX(), actor1->getY() - actor2->getY()) < 512;
+}
+
+bool areColliding(double x1, double y1, double x2, double y2,
+                  BonkProps *props1 = nullptr, BonkProps *props2 = nullptr);
 
 #endif // ACTOR_H_
