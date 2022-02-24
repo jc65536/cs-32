@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. ../global
+
+g32 -o ../bin/mid2 "$1" && echo "Compiled successfully." && ../bin/mid2
