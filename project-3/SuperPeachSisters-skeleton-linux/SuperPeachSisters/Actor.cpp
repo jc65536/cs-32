@@ -48,55 +48,33 @@ bool Movable::attemptMove(double dx, double dy) {
 bool Movable::checkSpace() {
     double adx = std::abs(dx),
            ady = std::abs(dy);
-    if (dx < 0) {
-        if (dy < 0) {
-            return adx <= spaceProps.midLeft.dist && ady <= spaceProps.botMid.dist && adx + ady <= spaceProps.botLeft.dist;
-        } else if (dy > 0) {
-            return adx <= spaceProps.midLeft.dist && ady < spaceProps.topMid.dist && adx + ady <= spaceProps.topLeft.dist;
-        } else {
-            if (adx <= spaceProps.midLeft.dist) {
-                return true;
-            } else {
-                if (spaceProps.midLeft.actor)
-                    spaceProps.midLeft.actor->bonk(this, BonkProps{false, false, false, true});
-                return false;
+    
+    bool dxDirection[] = {dx < 0, true, dx > 0};
+    bool dyDirection[] = {dy > 0, true, dy < 0};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (i == 1 && j == 1) // Do not check middle square
+                continue;
+            // Whether to check y movement
+            bool yDecision = dyDirection[i];
+            // Whether to check x movement
+            bool xDecision = dxDirection[j];
+            if (yDecision && xDecision) {
+                double attemptDist = yDecision * ady + xDecision * adx;
+                if (attemptDist > spaceProps.data[i][j].dist)
+                    return false;
             }
-        }
-    } else if (dx > 0) {
-        if (dy < 0) {
-            return adx <= spaceProps.midRight.dist && ady <= spaceProps.botMid.dist && adx + ady <= spaceProps.botRight.dist;
-        } else if (dy > 0) {
-            return adx <= spaceProps.midRight.dist && ady <= spaceProps.topMid.dist && adx + ady <= spaceProps.topRight.dist;
-        } else {
-            if (adx <= spaceProps.midRight.dist) {
-                return true;
-            } else {
-                if (spaceProps.midRight.actor)
-                    spaceProps.midRight.actor->bonk(this, BonkProps{true, false, false, false});
-                return false;
-            }
-        }
-    } else {
-        if (dy < 0) {
-            if (ady <= spaceProps.botMid.dist) {
-                return true;
-            } else {
-                if (spaceProps.botMid.actor)
-                    spaceProps.botMid.actor->bonk(this, BonkProps{false, false, true, false});
-                return false;
-            }
-        } else if (dy > 0) {
-            if (ady <= spaceProps.topMid.dist) {
-                return true;
-            } else {
-                if (spaceProps.topMid.actor)
-                    spaceProps.topMid.actor->bonk(this, BonkProps{false, true, false, false});
-                return false;
-            }
-        } else {
-            return true;
         }
     }
+
+    /*
+    dy > 0 && dx < 0 | dy > 0 && true | dy > 0 && dx > 0
+    true   && dx < 0 | false          | true   && dx > 0
+    dy < 0 && dx < 0 | dy < 0 && true | dy < 0 && dx > 0
+    */
+
+    return true;
 }
 
 //==============================================================================
@@ -150,6 +128,9 @@ void Peach::doSomething() {
 
     if (dx != 0 || dy != 0)
         moveTo(getX() + dx, getY() + dy);
+
+    std::cerr << "====" << std::endl;
+    spaceProps.print();
     spaceProps.clear();
 }
 
