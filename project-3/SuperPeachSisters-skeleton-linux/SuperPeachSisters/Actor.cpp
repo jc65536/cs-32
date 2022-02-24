@@ -184,22 +184,24 @@ Surroundings calcSpace(Actor *actor1, Actor *actor2) {
            xEnd2 = xStart2 + SPRITE_WIDTH,
            yEnd2 = yStart2 + SPRITE_HEIGHT;
 
-    // left, middle, right
-    bool column[3] = {xEnd2 <= xStart1, false, xStart2 >= xEnd1};
-    // top, middle, bottom
-    bool row[3] = {yStart2 >= yEnd1, false, yEnd2 <= yStart1};
-    // left, middle, right
-    bool colInRow[3] = {xStart2<xStart1, xEnd2> xStart1 && xStart2<xEnd1, xEnd2> xEnd1};
-    // top, middle, bottom
-    bool rowInCol[3] = {yEnd2 > yEnd1, yEnd2 > yStart1 && yStart2 < yEnd1, yStart2 < yStart1};
+    // x distance between the actors if actor2 is on actor1's left/middle/right
+    double xDist[] = {xStart1 - xEnd2, -1, xStart2 - xEnd1};
+    // y distance between the actors if actor2 is on actor1's top/middle/bottom
+    double yDist[] = {yStart2 - yEnd1, -1, yStart1 - yEnd2};
 
-    double xDist[] = {xStart1 - xEnd2, 0, xStart2 - xEnd1};
-    double yDist[] = {yStart2 - yEnd1, 0, yStart1 - yEnd2};
+    // Whether any part of actor2 exists in the top/middle/bottom row of the
+    // space around actor1
+    bool inCol[3] = {xStart2 < xStart1, xEnd2 > xStart1 && xStart2 < xEnd1, xEnd2 > xEnd1};
+    // Whether any part of actor2 exists in the left/middle/right column of the
+    // space around actor1
+    bool inRow[3] = {yEnd2 > yEnd1, yEnd2 > yStart1 && yStart2 < yEnd1, yStart2 < yStart1};
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            bool yDecision = row[i] && colInRow[j];
-            bool xDecision = column[j] && rowInCol[i];
+            // Should y distance be added
+            bool yDecision = yDist[i] >= 0 && inCol[j];
+            // Should x distance be added
+            bool xDecision = xDist[j] >= 0 && inRow[i];
             if (xDecision || yDecision) {
                 Surroundings::Pair &data = ret.data[i][j];
                 data.actor = actor2;
