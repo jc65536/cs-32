@@ -22,7 +22,6 @@ public:
 
     virtual bool passable() = 0;
     virtual Movable *movable() = 0;
-    virtual bool damageable() = 0;
 
     void print();
 
@@ -41,10 +40,11 @@ public:
     void addNearbyBlock(Actor *actor);
 
 protected:
-    bool attemptMove(double dx, double dy);
+    void startMove();
+    bool attemptMove(double ddx, double ddy);
+    void commitMove();
 
-    bool checkSpace();
-
+private:
     double dx, dy;
     std::vector<Actor *> nearbyBlocks;
 };
@@ -56,7 +56,6 @@ public:
     void bonk(Actor *other, BonkProps props);
 
     bool passable() { return true; }
-    bool damageable() { return true; }
 
     void commitBonk();
 
@@ -69,20 +68,22 @@ private:
 
 class Block : public Actor {
 public:
-    Block(StudentWorld &world, double startX, double startY);
+    Block(StudentWorld &world, double startX, double startY, int imageId = IID_BLOCK);
 
     void bonk(Actor *other, BonkProps props);
 
     // Property methods
     bool passable() { return false; }
     Movable *movable() { return nullptr; }
-    bool damageable() { return false; }
 };
 
 class Pipe : public Block {
 public:
     Pipe(StudentWorld &world, double startX, double startY);
 };
+
+//==============================================================================
+// Utility functions
 
 inline double distance2(double x, double y) {
     return x * x + y * y;

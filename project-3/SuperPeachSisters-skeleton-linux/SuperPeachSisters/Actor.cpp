@@ -23,30 +23,33 @@ void Actor::print() {
 //==============================================================================
 // Class Movable
 
-bool Movable::attemptMove(double dx, double dy) {
-    this->dx += dx;
-    this->dy += dy;
-    if (!checkSpace()) {
-        this->dx -= dx;
-        this->dy -= dy;
-        return false;
-    }
-    return true;
+void Movable::startMove() {
+    dx = dy = 0;
 }
 
-void Movable::addNearbyBlock(Actor *actor) {
-    nearbyBlocks.push_back(actor);
-}
-
-bool Movable::checkSpace() {
+bool Movable::attemptMove(double ddx, double ddy) {
+    dx += ddx;
+    dy += ddy;
+    BonkProps props;
     for (Actor *actor : nearbyBlocks) {
-        BonkProps props;
         if (areColliding(actor->getX(), actor->getY(), getX() + dx, getY() + dy, &props)) {
             actor->bonk(this, props);
+            dx -= ddx;
+            dy -= ddy;
             return false;
         }
     }
     return true;
+}
+
+void Movable::commitMove() {
+    if (dx != 0 || dy != 0)
+        moveTo(getX() + dx, getY() + dy);
+    nearbyBlocks.clear();
+}
+
+void Movable::addNearbyBlock(Actor *actor) {
+    nearbyBlocks.push_back(actor);
 }
 
 //==============================================================================
@@ -66,7 +69,7 @@ void Peach::doSomething() {
     // Decrement fireball delay
     // Hit any objects
 
-    dx = dy = 0;
+    startMove();
 
     if (jumpDist > 0) {
         // Jump logic
@@ -101,10 +104,7 @@ void Peach::doSomething() {
         }
     }
 
-    if (dx != 0 || dy != 0)
-        moveTo(getX() + dx, getY() + dy);
-
-    nearbyBlocks.clear();
+    commitMove();
 }
 
 void Peach::bonk(Actor *other, BonkProps props) {
@@ -113,7 +113,7 @@ void Peach::bonk(Actor *other, BonkProps props) {
 //==============================================================================
 // Class Block
 
-Block::Block(StudentWorld &world, double startX, double startY) : Actor(world, IID_BLOCK, startX, startY, 0, 1.0, 2) {}
+Block::Block(StudentWorld &world, double startX, double startY, int imageId) : Actor(world, imageId, startX, startY, 0, 1.0, 2) {}
 
 void Block::bonk(Actor *other, BonkProps props) {
     if (!props.top) {
@@ -122,12 +122,12 @@ void Block::bonk(Actor *other, BonkProps props) {
     }
 }
 
-Pipe::Pipe(StudentWorld &world, double startX, double startY) : Block(world, startX, startY) {}
+Pipe::Pipe(StudentWorld &world, double startX, double startY) : Block(world, startX, startY, IID_PIPE) {}
 
 //==============================================================================
 // Utility functions
 
-inline bool areColliding(double x1, double y1, double x2, double y2, BonkProps *props1, BonkProps *props2) {
+bool areColliding(double x1, double y1, double x2, double y2, BonkProps *props1, BonkProps *props2) {
     double xStart1 = x1,
            yStart1 = y1,
            xEnd1 = xStart1 + SPRITE_WIDTH,
