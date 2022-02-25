@@ -87,16 +87,12 @@ int StudentWorld::move() {
             if (areColliding(actor1->getX(), actor1->getY(), actor2->getX(), actor2->getY(), &props1, &props2)) {
                 actor1->bonk(actor2, props1);
                 actor2->bonk(actor1, props2);
-                continue;
-            }
-
-            if (!actor1->passable() && actor2->movable()) {
-                actor1 = actors[j];
-                actor2 = actors[i];
-            }
-
-            if (actor1->movable() && !actor2->passable() && areNearby(actor1, actor2)) {
-                actor1->movable()->addNearbyActor(actor2);
+            } else if (areNearby(actor1, actor2)) {
+                if (actor1->movable() && !actor2->passable()) {
+                    actor1->movable()->addNearbyBlock(actor2);
+                } else if (!actor1->passable() && actor2->movable()) {
+                    actor2->movable()->addNearbyBlock(actor1);
+                }
             }
         }
     }

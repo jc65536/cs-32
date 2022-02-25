@@ -38,7 +38,7 @@ public:
     Movable() {}
     virtual Movable *movable() { return this; };
 
-    void addNearbyActor(Actor *actor);
+    void addNearbyBlock(Actor *actor);
 
 protected:
     bool attemptMove(double dx, double dy);
@@ -46,7 +46,7 @@ protected:
     bool checkSpace();
 
     double dx, dy;
-    std::vector<Actor *> nearbyActors;
+    std::vector<Actor *> nearbyBlocks;
 };
 
 class Peach : public Movable {
@@ -64,6 +64,7 @@ private:
     int hp = 1;
     int powers = 0;
     int jumpDist = 0;
+    bool grounded = true;
 };
 
 class Block : public Actor {
