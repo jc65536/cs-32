@@ -117,12 +117,16 @@ void Peach::doSomething() {
             attemptMove(4, 0, true);
             break;
         case KEY_PRESS_UP:
-            if (grounded)
+            if (grounded) {
                 jumpDistance = powers & Peach::JUMP ? 12 : 8;
+                world.playSound(SOUND_PLAYER_JUMP);
+                cerr << "SOUND_PLAYER_JUMP" << endl;
+            }
             break;
         case KEY_PRESS_SPACE:
             if (powers & Peach::FIRE && !fireCountdown) {
                 world.playSound(SOUND_PLAYER_FIRE);
+                cerr << "SOUND_PLAYER_FIRE" << endl;
                 fireCountdown = 8;
                 int dir = getDirection();
                 world.addActor(new PeachFireball(world, getX() + (dir == 0 ? 4 : -4), getY(), dir));
@@ -239,6 +243,7 @@ void Enemy::bonk(Actor *other) {
 
     if (peach->getPowers() & Peach::STAR) {
         world.playSound(SOUND_PLAYER_KICK);
+        cerr << "SOUND_PLAYER_KICK" << endl;
         takeDamage();
     }
 }
