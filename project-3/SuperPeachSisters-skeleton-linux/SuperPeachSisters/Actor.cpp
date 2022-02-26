@@ -70,6 +70,8 @@ Peach::Peach(StudentWorld &world, double startX, double startY)
       hp(1),
       powers(0),
       jumpDistance(0),
+      fireCountdown(0),
+      starCountdown(0),
       grounded(true) {}
 
 void Peach::doSomething() {
@@ -122,7 +124,8 @@ void Peach::doSomething() {
             if (powers & Peach::FIRE && !fireCountdown) {
                 world.playSound(SOUND_PLAYER_FIRE);
                 fireCountdown = 8;
-
+                int dir = getDirection();
+                world.addActor(new PeachFireball(world, getX() + (dir == 0 ? 4 : -4), getY(), dir));
             }
             break;
         }
