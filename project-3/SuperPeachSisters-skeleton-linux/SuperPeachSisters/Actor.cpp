@@ -251,8 +251,8 @@ void Enemy::takeDamage() {
     die();
 }
 
-Goomba::Goomba(StudentWorld &world, double startX, double startY)
-    : Enemy(world, startX, startY, IID_GOOMBA) {}
+Goomba::Goomba(StudentWorld &world, double startX, double startY, int imageId)
+    : Enemy(world, startX, startY, imageId) {}
 
 bool Goomba::testPosition(double x, double y, bool bonk) {
     return getMinX() <= x && x <= getMaxX() && Actor::testPosition(x, y, bonk);
@@ -275,3 +275,6 @@ void Goomba::doSomething() {
         setDirection(right ? 180 : 0);
     }
 }
+
+Koopa::Koopa(StudentWorld &world, double startX, double startY)
+    : Goomba(world, startX, startY, IID_KOOPA) {}

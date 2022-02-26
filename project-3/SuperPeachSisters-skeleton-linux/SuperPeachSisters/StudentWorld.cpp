@@ -65,6 +65,7 @@ int StudentWorld::init() {
                 enemy = addActor<Goomba>(x, y);
                 break;
             case Level::koopa:
+                enemy = addActor<Koopa>(x, y);
                 break;
             case Level::mario:
                 addActor<Mario>(x, y);

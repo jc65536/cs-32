@@ -152,10 +152,15 @@ private:
 
 class Goomba : public Enemy {
 public:
-    Goomba(StudentWorld &world, double startX, double startY);
+    Goomba(StudentWorld &world, double startX, double startY, int imageId = IID_GOOMBA);
 
     bool testPosition(double x, double y, bool bonk) override;
     void doSomething() override;
+};
+
+class Koopa : public Goomba {
+public:
+    Koopa(StudentWorld &world, double startX, double startY);
 };
 
 //==============================================================================
