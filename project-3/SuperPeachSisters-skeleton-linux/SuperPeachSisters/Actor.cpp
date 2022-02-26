@@ -2,64 +2,54 @@
 #include "GameConstants.h"
 #include "StudentWorld.h"
 #include <iostream>
+#include <list>
+
+using namespace std;
 
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
 
 //==============================================================================
-// Class Actor
+// Actor
 
 Actor::Actor(StudentWorld &world, int imageId, double startX, double startY,
-             int startDirection, double size, int depth)
+             int startDirection, int depth, double size)
     : GraphObject(imageId, startX, startY, startDirection, depth, size),
-      world(world) {}
+      world(world),
+      alive(true) {}
 
 void Actor::print() {
-    std::cerr << "==== Actor ====" << std::endl;
-    std::cerr << "Coordinates: (" << getX() << ", " << getY() << ")" << std::endl;
-    std::cerr << "Passable: " << passable() << std::endl;
-    std::cerr << "Movable: " << (movable() != nullptr) << std::endl;
+    cerr << "==== Actor ====" << endl;
+    cerr << "Coordinates: (" << getX() << ", " << getY() << ")" << endl;
+    cerr << "Passable: " << passable() << endl;
 }
 
-//==============================================================================
-// Class Movable
-
-void Movable::startMove() {
-    dx = dy = 0;
-}
-
-bool Movable::attemptMove(double ddx, double ddy) {
-    dx += ddx;
-    dy += ddy;
-    BonkProps props;
-    for (Actor *actor : nearbyBlocks) {
-        if (areColliding(actor->getX(), actor->getY(), getX() + dx, getY() + dy, &props)) {
-            actor->bonk(this, props);
-            dx -= ddx;
-            dy -= ddy;
+bool Actor::attemptMove(double dx, double dy, bool bonk) {
+    double newX = getX() + dx, newY = getY() + dy;
+    list<Actor *> collidingActors = getWorld().findCollidingActors(this, newX, newY);
+    for (Actor *actor : collidingActors) {
+        if (!actor->passable()) {
+            if (bonk)
+                actor->bonk(this);
             return false;
         }
     }
+    moveTo(newX, newY);
     return true;
 }
 
-void Movable::commitMove() {
-    if (dx != 0 || dy != 0)
-        moveTo(getX() + dx, getY() + dy);
-    nearbyBlocks.clear();
-}
-
-void Movable::addNearbyBlock(Actor *actor) {
-    nearbyBlocks.push_back(actor);
+inline bool Actor::overlapsWithPeach() {
+    Peach *peach = world.getPeach();
+    return areColliding(getX(), getY(), peach->getX(), peach->getY());
 }
 
 //==============================================================================
-// Class Peach
+// Peach
 
 Peach::Peach(StudentWorld &world, double startX, double startY)
-    : Actor(world, IID_PEACH, startX, startY, 0, 1.0, 1) {}
+    : Actor(world, IID_PEACH, startX, startY, 0, 1, 1.0) {}
 
 void Peach::doSomething() {
-    if (!hp)
+    if (!isAlive())
         return;
 
     StudentWorld &world = getWorld();
@@ -69,15 +59,18 @@ void Peach::doSomething() {
     // Decrement fireball delay
     // Hit any objects
 
-    startMove();
+    list<Actor *> collidingActors = world.findCollidingActors(this);
+    for (Actor *actor : collidingActors) {
+        actor->bonk(this);
+    }
 
-    if (jumpDist > 0) {
+    if (jumpDistance > 0) {
         // Jump logic
-        if (attemptMove(0, 4)) {
-            jumpDist--;
+        if (attemptMove(0, 4, true)) {
+            jumpDistance--;
             grounded = false;
         } else {
-            jumpDist = 0;
+            jumpDistance = 0;
         }
     } else {
         // Fall logic
@@ -89,59 +82,133 @@ void Peach::doSomething() {
         switch (key) {
         case KEY_PRESS_LEFT:
             setDirection(180);
-            attemptMove(-4, 0);
+            attemptMove(-4, 0, true);
             break;
         case KEY_PRESS_RIGHT:
             setDirection(0);
-            attemptMove(4, 0);
+            attemptMove(4, 0, true);
             break;
         case KEY_PRESS_UP:
             if (grounded)
-                jumpDist = 8;
+                jumpDistance = 8;
             break;
         case KEY_PRESS_SPACE:
             break;
         }
     }
-
-    commitMove();
 }
 
-void Peach::bonk(Actor *other, BonkProps props) {
+void Peach::bonk(Actor *other) {
 }
 
 //==============================================================================
-// Class Block
+// Obstacles
 
-Block::Block(StudentWorld &world, double startX, double startY, int imageId) : Actor(world, imageId, startX, startY, 0, 1.0, 2) {}
+Pipe::Pipe(StudentWorld &world, double startX, double startY, int imageId)
+    : Actor(world, imageId, startX, startY, 0, 2, 1.0) {}
 
-void Block::bonk(Actor *other, BonkProps props) {
-    if (!props.top) {
-        getWorld().playSound(SOUND_PLAYER_BONK);
-        std::cerr << "SOUND PLAYER BONK" << std::endl;
+Block::Block(StudentWorld &world, double startX, double startY)
+    : Pipe(world, startX, startY, IID_BLOCK),
+      createPowerup(nullptr) {}
+
+void Block::setPowerup(void (*create)(StudentWorld &, double, double)) {
+    createPowerup = create;
+}
+
+void Block::bonk(Actor *other) {
+    StudentWorld &world = getWorld();
+    if (createPowerup) {
+        world.playSound(SOUND_POWERUP_APPEARS);
+        cerr << "SOUND_POWERUP_APPEARS" << endl;
+        createPowerup(world, getX(), getY() + 8);
+        createPowerup = nullptr;
+    } else {
+        world.playSound(SOUND_PLAYER_BONK);
+        cerr << "SOUND_PLAYER_BONK" << endl;
     }
 }
 
-Pipe::Pipe(StudentWorld &world, double startX, double startY) : Block(world, startX, startY, IID_PIPE) {}
+//==============================================================================
+// Flag
+
+Flag::Flag(StudentWorld &world, double startX, double startY, int imageId)
+    : Actor(world, imageId, startX, startY, 0, 1, 1.0) {}
+
+void Flag::doSomething() {
+    if (overlapsWithPeach()) {
+        getWorld().increaseScore(1000);
+        gameSignal();
+        die();
+    }
+}
+
+void Flag::gameSignal() {
+    getWorld().finishLevel();
+}
+
+Mario::Mario(StudentWorld &world, double startX, double startY)
+    : Flag(world, startX, startY, IID_MARIO) {}
+
+void Mario::gameSignal() {
+    getWorld().winGame();
+}
+
+//==============================================================================
+// Powerups
+
+Powerup::Powerup(StudentWorld &world, int imageId, double startX, double startY)
+    : Actor(world, imageId, startX, startY, 0, 1, 1.0) {}
+
+void Powerup::doSomething() {
+    StudentWorld &world = getWorld();
+    if (overlapsWithPeach()) {
+        // Increase score by points()
+        Peach *peach = world.getPeach();
+        peach->setHp(2);
+        peach->addPower(power());
+        die();
+        world.playSound(SOUND_PLAYER_POWERUP);
+        cerr << "SOUND_PLAYER_POWERUP" << endl;
+        return;
+    }
+
+    attemptMove(0, -2);
+
+    bool right = getDirection() == 0;
+    int dx = right ? 2 : -2;
+    if (!attemptMove(dx, 0)) {
+        setDirection(right ? 180 : 0);
+    }
+}
+
+Flower::Flower(StudentWorld &world, double startX, double startY)
+    : Powerup(world, IID_FLOWER, startX, startY) {}
+
+void Flower::create(StudentWorld &world, double startX, double startY) {
+    world.addActor<Flower>(startX, startY);
+}
+
+Mushroom::Mushroom(StudentWorld &world, double startX, double startY)
+    : Powerup(world, IID_MUSHROOM, startX, startY) {}
+
+void Mushroom::create(StudentWorld &world, double startX, double startY) {
+    world.addActor<Mushroom>(startX, startY);
+}
+
+Star::Star(StudentWorld &world, double startX, double startY)
+    : Powerup(world, IID_STAR, startX, startY) {}
+
+void Star::create(StudentWorld &world, double startX, double startY) {
+    world.addActor<Star>(startX, startY);
+}
 
 //==============================================================================
 // Utility functions
 
-bool areColliding(double x1, double y1, double x2, double y2, BonkProps *props1, BonkProps *props2) {
-    double xStart1 = x1,
-           yStart1 = y1,
-           xEnd1 = xStart1 + SPRITE_WIDTH,
+bool areColliding(double xStart1, double yStart1, double xStart2, double yStart2) {
+    double xEnd1 = xStart1 + SPRITE_WIDTH,
            yEnd1 = yStart1 + SPRITE_HEIGHT,
-           xStart2 = x2,
-           yStart2 = y2,
            xEnd2 = xStart2 + SPRITE_WIDTH,
            yEnd2 = yStart2 + SPRITE_HEIGHT;
-    bool colliding = xEnd2 > xStart1 && xStart2 < xEnd1 && yEnd2 > yStart1 && yStart2 < yEnd1;
-    if (colliding) {
-        if (props1)
-            *props1 = {(xStart2 < xStart1), (yStart2 < yStart1), (yEnd2 > yEnd1), (xEnd2 > xEnd1)};
-        if (props2)
-            *props2 = {(xStart1 < xStart2), (yStart1 < yStart2), (yEnd1 > yEnd2), (xEnd1 > xEnd2)};
-    }
-    return colliding;
+    return xEnd2 > xStart1 && xStart2 < xEnd1 && yEnd2 > yStart1 && yStart2 < yEnd1;
 }

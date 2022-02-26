@@ -6,94 +6,155 @@
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 
 class StudentWorld;
-class Actor;
-class Movable;
-
-struct BonkProps {
-    bool left, bot, top, right;
-};
 
 class Actor : public GraphObject {
 public:
     Actor(StudentWorld &world, int imageId, double startX, double startY,
-          int startDirection, double size, int depth);
+          int startDirection, int depth, double size);
     virtual void doSomething(){};
-    virtual void bonk(Actor *other, BonkProps props) {}
+    virtual void bonk(Actor *other) {}
 
+    virtual bool isPeach() { return false; }
     virtual bool passable() = 0;
-    virtual Movable *movable() = 0;
+    virtual bool damageable() = 0;
+
+    bool isAlive() { return alive; }
 
     void print();
 
 protected:
     StudentWorld &getWorld() { return world; }
+    void die() { alive = false; }
+    bool attemptMove(double dx, double dy, bool bonk = false);
+
+    // Utility member functions
+    inline bool overlapsWithPeach();
 
 private:
+    bool alive;
     StudentWorld &world;
 };
 
-class Movable : public virtual Actor {
-public:
-    Movable() {}
-    virtual Movable *movable() { return this; };
-
-    void addNearbyBlock(Actor *actor);
-
-protected:
-    void startMove();
-    bool attemptMove(double ddx, double ddy);
-    void commitMove();
-
-private:
-    double dx, dy;
-    std::vector<Actor *> nearbyBlocks;
-};
-
-class Peach : public Movable {
+class Peach : public Actor {
 public:
     Peach(StudentWorld &world, double startX, double startY);
-    void doSomething();
-    void bonk(Actor *other, BonkProps props);
+    void doSomething() override;
+    void bonk(Actor *other) override;
 
-    bool passable() { return true; }
+    static const int JUMP = 0b0001,
+                     FIRE = 0b0010,
+                     STAR = 0b0100;
+
+    bool isPeach() override { return true; }
+    bool passable() override { return true; }
+    bool damageable() override { return true; }
 
     void commitBonk();
+
+    void setHp(int hp) { this->hp = hp; }
+    void addPower(int power) { powers &= power; }
 
 private:
     int hp = 1;
     int powers = 0;
-    int jumpDist = 0;
+    int jumpDistance = 0;
     bool grounded = true;
 };
 
-class Block : public Actor {
+class Flag : public Actor {
 public:
-    Block(StudentWorld &world, double startX, double startY, int imageId = IID_BLOCK);
+    Flag(StudentWorld &world, double startX, double startY, int imageId = IID_FLAG);
 
-    void bonk(Actor *other, BonkProps props);
+    void doSomething() override;
 
-    // Property methods
-    bool passable() { return false; }
-    Movable *movable() { return nullptr; }
+    virtual void gameSignal();
+
+    bool passable() override { return true; }
+    bool damageable() override { return false; }
 };
 
-class Pipe : public Block {
+class Mario : public Flag {
 public:
-    Pipe(StudentWorld &world, double startX, double startY);
+    Mario(StudentWorld &world, double startX, double startY);
+
+    void gameSignal() override;
+};
+
+//==============================================================================
+// Powerups
+
+class Powerup : public Actor {
+public:
+    Powerup(StudentWorld &world, int imageId, double startX, double startY);
+
+    void doSomething();
+
+    bool passable() override { return true; }
+    bool damageable() override { return false; }
+
+protected:
+    virtual int points() = 0;
+    virtual int power() = 0;
+};
+
+class Flower : public Powerup {
+public:
+    Flower(StudentWorld &world, double startX, double startY);
+
+    static void create(StudentWorld &world, double startX, double startY);
+
+private:
+    int points() { return 50; }
+    int power() { return Peach::FIRE; }
+};
+
+class Mushroom : public Powerup {
+public:
+    Mushroom(StudentWorld &world, double startX, double startY);
+
+    static void create(StudentWorld &world, double startX, double startY);
+
+private:
+    int points() { return 75; }
+    int power() { return Peach::JUMP; }
+};
+
+class Star : public Powerup {
+public:
+    Star(StudentWorld &world, double startX, double startY);
+
+    static void create(StudentWorld &world, double startX, double startY);
+
+private:
+    int points() { return 100; }
+    int power() { return Peach::STAR; }
+};
+
+//==============================================================================
+// Obstacles
+
+class Pipe : public Actor {
+public:
+    Pipe(StudentWorld &world, double startX, double startY, int imageId = IID_PIPE);
+
+    bool passable() override { return false; }
+    bool damageable() override { return false; }
+};
+
+class Block : public Pipe {
+public:
+    Block(StudentWorld &world, double startX, double startY);
+
+    void bonk(Actor *other) override;
+    void setPowerup(void (*creator)(StudentWorld &, double, double));
+
+private:
+    void (*createPowerup)(StudentWorld &, double, double);
 };
 
 //==============================================================================
 // Utility functions
 
-inline double distance2(double x, double y) {
-    return x * x + y * y;
-}
-
-inline bool areNearby(Actor *actor1, Actor *actor2) {
-    return distance2(actor1->getX() - actor2->getX(), actor1->getY() - actor2->getY()) < 512;
-}
-
-bool areColliding(double x1, double y1, double x2, double y2,
-                  BonkProps *props1 = nullptr, BonkProps *props2 = nullptr);
+bool areColliding(double xStart1, double yStart1, double xStart2, double yStart2);
 
 #endif // ACTOR_H_

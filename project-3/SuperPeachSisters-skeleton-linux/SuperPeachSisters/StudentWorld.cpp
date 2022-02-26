@@ -2,7 +2,9 @@
 #include "Actor.h"
 #include "GameConstants.h"
 #include "Level.h"
+#include <list>
 #include <string>
+
 using namespace std;
 
 GameWorld *createStudentWorld(string assetPath) {
@@ -34,42 +36,43 @@ int StudentWorld::init() {
 
     // Loop through each grid position and decide what to do
     Level::GridEntry gridEntry;
-    for (int x = 0; x < GRID_WIDTH; x++) {
-        for (int y = 0; y < GRID_HEIGHT; y++) {
-            double pxX = x * SPRITE_WIDTH;
-            double pxY = y * SPRITE_HEIGHT;
-            gridEntry = level.getContentsOf(x, y);
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            double x = j * SPRITE_WIDTH,
+                   y = i * SPRITE_HEIGHT;
+            gridEntry = level.getContentsOf(j, i);
             switch (gridEntry) {
             case Level::block:
-                actors.push_back(new Block(*this, pxX, pxY));
+                addActor<Block>(x, y);
                 break;
             case Level::empty:
                 break;
             case Level::flag:
+                addActor<Flag>(x, y);
                 break;
             case Level::flower_goodie_block:
-                actors.push_back(new Block(*this, pxX, pxY));
+                addActor<Block>(x, y)->setPowerup(Flower::create);
                 break;
             case Level::goomba:
                 break;
             case Level::koopa:
                 break;
             case Level::mario:
+                addActor<Mario>(x, y);
                 break;
             case Level::mushroom_goodie_block:
-                actors.push_back(new Block(*this, pxX, pxY));
+                addActor<Block>(x, y)->setPowerup(Mushroom::create);
                 break;
             case Level::peach:
-                peach = new Peach(*this, pxX, pxY);
-                actors.push_back(peach);
+                peach = addActor<Peach>(x, y);
                 break;
             case Level::pipe:
-                actors.push_back(new Pipe(*this, pxX, pxY));
+                addActor<Pipe>(x, y);
                 break;
             case Level::piranha:
                 break;
             case Level::star_goodie_block:
-                actors.push_back(new Block(*this, pxX, pxY));
+                addActor<Block>(x, y)->setPowerup(Star::create);
                 break;
             }
         }
@@ -79,32 +82,36 @@ int StudentWorld::init() {
 }
 
 int StudentWorld::move() {
-    for (int i = 0; i + 1 < actors.size(); i++) {
-        Actor *actor1 = actors[i];
-        for (int j = i + 1; j < actors.size(); j++) {
-            Actor *actor2 = actors[j];
-            BonkProps props1, props2;
-            if (areColliding(actor1->getX(), actor1->getY(), actor2->getX(), actor2->getY(), &props1, &props2)) {
-                actor1->bonk(actor2, props1);
-                actor2->bonk(actor1, props2);
-            } else if (areNearby(actor1, actor2)) {
-                if (actor1->movable() && !actor2->passable()) {
-                    actor1->movable()->addNearbyBlock(actor2);
-                } else if (!actor1->passable() && actor2->movable()) {
-                    actor2->movable()->addNearbyBlock(actor1);
-                }
-            }
+    returnCode = GWSTATUS_CONTINUE_GAME;
+    auto it = actors.begin();
+    while (it != actors.end()) {
+        Actor *actor = *it;
+        actor->doSomething();
+        if (actor->isAlive()) {
+            it++;
+        } else {
+            delete actor;
+            it = actors.erase(it);
         }
     }
+    return returnCode;
+}
 
+list<Actor *> StudentWorld::findCollidingActors(Actor *self, double x, double y) {
+    if (x < 0)
+        x = self->getX();
+    if (y < 0)
+        y = self->getY();
+    list<Actor *> collidingActors;
     for (Actor *actor : actors) {
-        actor->doSomething();
+        if (actor != self && areColliding(x, y, actor->getX(), actor->getY()))
+            collidingActors.push_back(actor);
     }
-
-    return GWSTATUS_CONTINUE_GAME;
+    return collidingActors;
 }
 
 void StudentWorld::cleanUp() {
     for (Actor *actor : actors)
         delete actor;
+    actors.clear();
 }
