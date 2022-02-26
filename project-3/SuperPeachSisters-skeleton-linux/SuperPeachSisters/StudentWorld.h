@@ -15,15 +15,14 @@ public:
     virtual int init();
     virtual int move();
     virtual void cleanUp();
+    ~StudentWorld();
+
     std::list<Actor *> findCollidingActors(Actor *self, double x = -1, double y = -1);
     Peach *getPeach() { return peach; }
+    void addActor(Actor *actor) { actors.push_back(actor); }
 
     void finishLevel() { returnCode = GWSTATUS_FINISHED_LEVEL; }
     void winGame() { returnCode = GWSTATUS_PLAYER_WON; }
-
-    void addActor(Actor *actor) { actors.push_back(actor); }
-
-    ~StudentWorld();
 
 private:
     std::list<Actor *> actors;

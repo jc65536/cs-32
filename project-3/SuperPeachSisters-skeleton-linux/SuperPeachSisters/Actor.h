@@ -11,22 +11,20 @@ class Actor : public GraphObject {
 public:
     Actor(StudentWorld &world, int imageId, double startX, double startY,
           int startDirection, int depth, double size);
+
     virtual void doSomething(){};
     virtual void bonk(Actor *other) {}
+    virtual bool testPosition(double x, double y, bool bonk);
 
     bool isPeach();
     virtual bool passable() = 0;
     virtual bool damageable() = 0;
-
     bool isAlive() { return alive; }
 
 protected:
     StudentWorld &getWorld() { return world; }
     void die() { alive = false; }
     bool attemptMove(double dx, double dy, bool bonk = false);
-    virtual bool testPosition(double x, double y, bool bonk);
-
-    // Utility member functions
     bool overlappingWithPeach();
 
 private:
@@ -37,6 +35,7 @@ private:
 class Peach : public Actor {
 public:
     Peach(StudentWorld &world, double startX, double startY);
+
     void doSomething() override;
     void bonk(Actor *other) override;
 
@@ -44,12 +43,12 @@ public:
                      FIRE = 0b0010,
                      STAR = 0b0100;
 
-    bool passable() override { return true; }
-    bool damageable() override { return true; }
-
     void setHp(int hp) { this->hp = hp; }
     void addPower(int power) { powers |= power; }
     int getPowers() { return powers; }
+
+    bool passable() override { return true; }
+    bool damageable() override { return true; }
 
 private:
     int hp;
@@ -62,7 +61,8 @@ private:
 
 class Flag : public Actor {
 public:
-    Flag(StudentWorld &world, double startX, double startY, int imageId = IID_FLAG);
+    Flag(StudentWorld &world, double startX, double startY,
+         int imageId = IID_FLAG);
 
     void doSomething() override;
 
@@ -100,8 +100,6 @@ class Flower : public Powerup {
 public:
     Flower(StudentWorld &world, double startX, double startY);
 
-    static void create(StudentWorld &world, double startX, double startY);
-
 private:
     int points() { return 50; }
     int power() { return Peach::FIRE; }
@@ -111,8 +109,6 @@ class Mushroom : public Powerup {
 public:
     Mushroom(StudentWorld &world, double startX, double startY);
 
-    static void create(StudentWorld &world, double startX, double startY);
-
 private:
     int points() { return 75; }
     int power() { return Peach::JUMP; }
@@ -121,8 +117,6 @@ private:
 class Star : public Powerup {
 public:
     Star(StudentWorld &world, double startX, double startY);
-
-    static void create(StudentWorld &world, double startX, double startY);
 
 private:
     int points() { return 100; }
@@ -137,15 +131,16 @@ public:
     Enemy(StudentWorld &world, double startX, double startY, int imageId);
 
     void bonk(Actor *other) override;
-    void takeDamage();
 
-    bool passable() override { return true; }
-    bool damageable() override { return true; }
+    virtual void takeDamage();
 
     double getMinX() { return minX; }
     double getMaxX() { return maxX; }
     void setMinX(double x) { minX = x; }
     void setMaxX(double x) { maxX = x; }
+
+    bool passable() override { return true; }
+    bool damageable() override { return true; }
 
 private:
     double minX, maxX;
@@ -153,10 +148,11 @@ private:
 
 class Goomba : public Enemy {
 public:
-    Goomba(StudentWorld &world, double startX, double startY, int imageId = IID_GOOMBA);
+    Goomba(StudentWorld &world, double startX, double startY,
+           int imageId = IID_GOOMBA);
 
-    bool testPosition(double x, double y, bool bonk) override;
     void doSomething() override;
+    bool testPosition(double x, double y, bool bonk) override;
 };
 
 class Koopa : public Goomba {
@@ -169,7 +165,8 @@ public:
 
 class Pipe : public Actor {
 public:
-    Pipe(StudentWorld &world, double startX, double startY, int imageId = IID_PIPE);
+    Pipe(StudentWorld &world, double startX, double startY,
+         int imageId = IID_PIPE);
 
     bool passable() override { return false; }
     bool damageable() override { return false; }
@@ -177,7 +174,8 @@ public:
 
 class Block : public Pipe {
 public:
-    Block(StudentWorld &world, double startX, double startY, void (*create)(StudentWorld &, double, double) = nullptr);
+    Block(StudentWorld &world, double startX, double startY,
+          void (*create)(StudentWorld &, double, double) = nullptr);
 
     void bonk(Actor *other) override;
 
@@ -190,7 +188,8 @@ private:
 
 class Projectile : public Actor {
 public:
-    Projectile(StudentWorld &world, int imageId, double startX, double startY, int startDirection);
+    Projectile(StudentWorld &world, int imageId, double startX, double startY,
+               int startDirection);
 
     void doSomething() override;
 
@@ -203,7 +202,8 @@ protected:
 
 class PeachFireball : public Projectile {
 public:
-    PeachFireball(StudentWorld &world, double startX, double startY, int startDirection);
+    PeachFireball(StudentWorld &world, double startX, double startY,
+                  int startDirection);
 
 protected:
     bool shouldDamage(Actor *actor) { return actor->damageable() && !actor->isPeach(); }

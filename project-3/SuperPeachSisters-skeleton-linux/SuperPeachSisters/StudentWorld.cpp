@@ -46,6 +46,7 @@ int StudentWorld::init() {
     list<pair<double, double>> previousStretches, currentStretches;
     for (int i = 0; i < GRID_HEIGHT; i++) {
         currentStretches = {{0, -1}};
+
         for (int j = 0; j < GRID_WIDTH; j++) {
             double x = j * SPRITE_WIDTH,
                    y = i * SPRITE_HEIGHT;
@@ -117,6 +118,7 @@ int StudentWorld::init() {
                 currentStretches.push_back({x, -1});
             }
         }
+
         currentStretches.back().second = VIEW_WIDTH;
         previousStretches = currentStretches;
     }

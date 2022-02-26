@@ -141,7 +141,8 @@ void Peach::bonk(Actor *other) {
 Pipe::Pipe(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 2, 1.0) {}
 
-Block::Block(StudentWorld &world, double startX, double startY, void (*create)(StudentWorld &, double, double))
+Block::Block(StudentWorld &world, double startX, double startY,
+             void (*create)(StudentWorld &, double, double))
     : Pipe(world, startX, startY, IID_BLOCK),
       createPowerup(create) {}
 
@@ -215,23 +216,11 @@ void Powerup::doSomething() {
 Flower::Flower(StudentWorld &world, double startX, double startY)
     : Powerup(world, IID_FLOWER, startX, startY) {}
 
-void Flower::create(StudentWorld &world, double startX, double startY) {
-    world.addActor(new Flower(world, startX, startY));
-}
-
 Mushroom::Mushroom(StudentWorld &world, double startX, double startY)
     : Powerup(world, IID_MUSHROOM, startX, startY) {}
 
-void Mushroom::create(StudentWorld &world, double startX, double startY) {
-    world.addActor(new Mushroom(world, startX, startY));
-}
-
 Star::Star(StudentWorld &world, double startX, double startY)
     : Powerup(world, IID_STAR, startX, startY) {}
-
-void Star::create(StudentWorld &world, double startX, double startY) {
-    world.addActor(new Star(world, startX, startY));
-}
 
 //==============================================================================
 // Enemies
@@ -308,5 +297,6 @@ void Projectile::doSomething() {
         die();
 }
 
-PeachFireball::PeachFireball(StudentWorld &world, double startX, double startY, int startDirection)
+PeachFireball::PeachFireball(StudentWorld &world, double startX, double startY,
+                             int startDirection)
     : Projectile(world, IID_PEACH_FIRE, startX, startY, startDirection) {}
