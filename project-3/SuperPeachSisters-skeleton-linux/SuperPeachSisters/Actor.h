@@ -49,10 +49,9 @@ public:
     bool passable() override { return true; }
     bool damageable() override { return true; }
 
-    void commitBonk();
-
     void setHp(int hp) { this->hp = hp; }
-    void addPower(int power) { powers &= power; }
+    void addPower(int power) { powers |= power; }
+    int getPowers() { return powers; }
 
 private:
     int hp = 1;

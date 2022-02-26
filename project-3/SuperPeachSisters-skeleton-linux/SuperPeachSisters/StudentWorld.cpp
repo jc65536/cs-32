@@ -3,6 +3,7 @@
 #include "GameConstants.h"
 #include "Level.h"
 #include <list>
+#include <sstream>
 #include <string>
 
 using namespace std;
@@ -83,6 +84,7 @@ int StudentWorld::init() {
 
 int StudentWorld::move() {
     returnCode = GWSTATUS_CONTINUE_GAME;
+
     auto it = actors.begin();
     while (it != actors.end()) {
         Actor *actor = *it;
@@ -94,6 +96,19 @@ int StudentWorld::move() {
             it = actors.erase(it);
         }
     }
+
+    ostringstream format;
+    int powers = peach->getPowers();
+    cerr << powers << endl;
+    format << "Lives: " << getLives() <<
+        "  Level: " << getLevel() <<
+        "  Points: " << getScore() <<
+        (powers & Peach::STAR ? "  StarPower!" : "") <<
+        (powers & Peach::FIRE ? "  ShootPower!" : "") <<
+        (powers & Peach::JUMP ? "  JumpPower!" : "") <<
+        endl;
+    setGameStatText(format.str());
+
     return returnCode;
 }
 
