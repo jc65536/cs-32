@@ -20,15 +20,14 @@ public:
 
     bool isAlive() { return alive; }
 
-    void print();
-
 protected:
     StudentWorld &getWorld() { return world; }
     void die() { alive = false; }
     bool attemptMove(double dx, double dy, bool bonk = false);
+    virtual bool testPosition(double x, double y, bool bonk);
 
     // Utility member functions
-    inline bool overlapsWithPeach();
+    bool overlappingWithPeach();
 
 private:
     bool alive;
@@ -54,10 +53,10 @@ public:
     int getPowers() { return powers; }
 
 private:
-    int hp = 1;
-    int powers = 0;
-    int jumpDistance = 0;
-    bool grounded = true;
+    int hp;
+    int powers;
+    int jumpDistance;
+    bool grounded;
 };
 
 class Flag : public Actor {
@@ -127,6 +126,36 @@ public:
 private:
     int points() { return 100; }
     int power() { return Peach::STAR; }
+};
+
+//==============================================================================
+// Enemies
+
+class Enemy : public Actor {
+public:
+    Enemy(StudentWorld &world, double startX, double startY, int imageId);
+
+    void bonk(Actor *other) override;
+    void takeDamage();
+
+    bool passable() override { return true; }
+    bool damageable() override { return true; }
+
+    double getMinX() { return minX; }
+    double getMaxX() { return maxX; }
+    void setMinX(double x) { minX = x; }
+    void setMaxX(double x) { maxX = x; }
+
+private:
+    double minX, maxX;
+};
+
+class Goomba : public Enemy {
+public:
+    Goomba(StudentWorld &world, double startX, double startY);
+
+    bool testPosition(double x, double y, bool bonk) override;
+    void doSomething() override;
 };
 
 //==============================================================================

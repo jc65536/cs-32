@@ -28,6 +28,8 @@ public:
         return actor;
     }
 
+    ~StudentWorld();
+
 private:
     std::list<Actor *> actors;
     Peach *peach;

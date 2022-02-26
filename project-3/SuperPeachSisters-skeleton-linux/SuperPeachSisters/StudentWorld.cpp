@@ -5,6 +5,7 @@
 #include <list>
 #include <sstream>
 #include <string>
+#include <utility>
 
 using namespace std;
 
@@ -37,16 +38,22 @@ int StudentWorld::init() {
 
     // Loop through each grid position and decide what to do
     Level::GridEntry gridEntry;
+    list<pair<double, double>> previousStretches, currentStretches;
     for (int i = 0; i < GRID_HEIGHT; i++) {
+        currentStretches = {{0, -1}};
         for (int j = 0; j < GRID_WIDTH; j++) {
             double x = j * SPRITE_WIDTH,
                    y = i * SPRITE_HEIGHT;
             gridEntry = level.getContentsOf(j, i);
+            Enemy *enemy = nullptr;
+            bool empty = false;
+
             switch (gridEntry) {
             case Level::block:
                 addActor<Block>(x, y);
                 break;
             case Level::empty:
+                empty = true;
                 break;
             case Level::flag:
                 addActor<Flag>(x, y);
@@ -55,6 +62,7 @@ int StudentWorld::init() {
                 addActor<Block>(x, y)->setPowerup(Flower::create);
                 break;
             case Level::goomba:
+                enemy = addActor<Goomba>(x, y);
                 break;
             case Level::koopa:
                 break;
@@ -76,7 +84,32 @@ int StudentWorld::init() {
                 addActor<Block>(x, y)->setPowerup(Star::create);
                 break;
             }
+
+            if (enemy) {
+                pair<double, double> stretch;
+                while (!previousStretches.empty()) {
+                    stretch = previousStretches.front();
+                    if (stretch.first <= x && stretch.second > x) {
+                        enemy->setMinX(stretch.first);
+                        enemy->setMaxX(stretch.second - SPRITE_WIDTH);
+                        break;
+                    }
+                    previousStretches.pop_front();
+                }
+            }
+
+            pair<double, double> &stretch = currentStretches.back();
+            bool passable = empty || actors.back()->passable();
+            if (stretch.second < 0 && passable) {
+                // Terminate stretch on a passable square
+                stretch.second = x;
+            } else if (stretch.second >= 0 && !passable) {
+                // Start a new stretch on a blocking square
+                currentStretches.push_back({x, -1});
+            }
         }
+        currentStretches.back().second = VIEW_WIDTH;
+        previousStretches = currentStretches;
     }
 
     return GWSTATUS_CONTINUE_GAME;
@@ -99,14 +132,7 @@ int StudentWorld::move() {
 
     ostringstream format;
     int powers = peach->getPowers();
-    cerr << powers << endl;
-    format << "Lives: " << getLives() <<
-        "  Level: " << getLevel() <<
-        "  Points: " << getScore() <<
-        (powers & Peach::STAR ? "  StarPower!" : "") <<
-        (powers & Peach::FIRE ? "  ShootPower!" : "") <<
-        (powers & Peach::JUMP ? "  JumpPower!" : "") <<
-        endl;
+    format << "Lives: " << getLives() << "  Level: " << getLevel() << "  Points: " << getScore() << (powers & Peach::STAR ? "  StarPower!" : "") << (powers & Peach::FIRE ? "  ShootPower!" : "") << (powers & Peach::JUMP ? "  JumpPower!" : "") << endl;
     setGameStatText(format.str());
 
     return returnCode;
@@ -129,4 +155,8 @@ void StudentWorld::cleanUp() {
     for (Actor *actor : actors)
         delete actor;
     actors.clear();
+}
+
+StudentWorld::~StudentWorld() {
+    cleanUp();
 }

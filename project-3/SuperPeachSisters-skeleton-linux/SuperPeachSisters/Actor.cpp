@@ -3,10 +3,22 @@
 #include "StudentWorld.h"
 #include <iostream>
 #include <list>
+#include <random>
 
 using namespace std;
 
 // Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
+
+//==============================================================================
+// Utility functions
+
+bool areColliding(double xStart1, double yStart1, double xStart2, double yStart2) {
+    double xEnd1 = xStart1 + SPRITE_WIDTH,
+           yEnd1 = yStart1 + SPRITE_HEIGHT,
+           xEnd2 = xStart2 + SPRITE_WIDTH,
+           yEnd2 = yStart2 + SPRITE_HEIGHT;
+    return xEnd2 > xStart1 && xStart2 < xEnd1 && yEnd2 > yStart1 && yStart2 < yEnd1;
+}
 
 //==============================================================================
 // Actor
@@ -17,27 +29,31 @@ Actor::Actor(StudentWorld &world, int imageId, double startX, double startY,
       world(world),
       alive(true) {}
 
-void Actor::print() {
-    cerr << "==== Actor ====" << endl;
-    cerr << "Coordinates: (" << getX() << ", " << getY() << ")" << endl;
-    cerr << "Passable: " << passable() << endl;
+bool Actor::attemptMove(double dx, double dy, bool bonk) {
+    bool attemptSuccessful = true;
+    double newX = getX() + dx, newY = getY() + dy;
+    if (testPosition(newX, newY, bonk)) {
+        moveTo(newX, newY);
+        return true;
+    } else {
+        return false;
+    }
 }
 
-bool Actor::attemptMove(double dx, double dy, bool bonk) {
-    double newX = getX() + dx, newY = getY() + dy;
-    list<Actor *> collidingActors = getWorld().findCollidingActors(this, newX, newY);
+bool Actor::testPosition(double x, double y, bool bonk) {
+    bool result = true;
+    list<Actor *> collidingActors = getWorld().findCollidingActors(this, x, y);
     for (Actor *actor : collidingActors) {
         if (!actor->passable()) {
             if (bonk)
                 actor->bonk(this);
-            return false;
+            result = false;
         }
     }
-    moveTo(newX, newY);
-    return true;
+    return result;
 }
 
-inline bool Actor::overlapsWithPeach() {
+bool Actor::overlappingWithPeach() {
     Peach *peach = world.getPeach();
     return areColliding(getX(), getY(), peach->getX(), peach->getY());
 }
@@ -46,7 +62,11 @@ inline bool Actor::overlapsWithPeach() {
 // Peach
 
 Peach::Peach(StudentWorld &world, double startX, double startY)
-    : Actor(world, IID_PEACH, startX, startY, 0, 1, 1.0) {}
+    : Actor(world, IID_PEACH, startX, startY, 0, 1, 1.0),
+      hp(1),
+      powers(0),
+      jumpDistance(0),
+      grounded(true) {}
 
 void Peach::doSomething() {
     if (!isAlive())
@@ -90,9 +110,11 @@ void Peach::doSomething() {
             break;
         case KEY_PRESS_UP:
             if (grounded)
-                jumpDistance = 8;
+                jumpDistance = powers & Peach::JUMP ? 12 : 8;
             break;
         case KEY_PRESS_SPACE:
+            if (powers & Peach::FIRE) {
+            }
             break;
         }
     }
@@ -135,7 +157,7 @@ Flag::Flag(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 1, 1.0) {}
 
 void Flag::doSomething() {
-    if (overlapsWithPeach()) {
+    if (overlappingWithPeach()) {
         getWorld().increaseScore(1000);
         gameSignal();
         die();
@@ -161,8 +183,9 @@ Powerup::Powerup(StudentWorld &world, int imageId, double startX, double startY)
 
 void Powerup::doSomething() {
     StudentWorld &world = getWorld();
-    if (overlapsWithPeach()) {
+    if (overlappingWithPeach()) {
         // Increase score by points()
+        world.increaseScore(points());
         Peach *peach = world.getPeach();
         peach->setHp(2);
         peach->addPower(power());
@@ -203,12 +226,52 @@ void Star::create(StudentWorld &world, double startX, double startY) {
 }
 
 //==============================================================================
-// Utility functions
+// Enemies
 
-bool areColliding(double xStart1, double yStart1, double xStart2, double yStart2) {
-    double xEnd1 = xStart1 + SPRITE_WIDTH,
-           yEnd1 = yStart1 + SPRITE_HEIGHT,
-           xEnd2 = xStart2 + SPRITE_WIDTH,
-           yEnd2 = yStart2 + SPRITE_HEIGHT;
-    return xEnd2 > xStart1 && xStart2 < xEnd1 && yEnd2 > yStart1 && yStart2 < yEnd1;
+Enemy::Enemy(StudentWorld &world, double startX, double startY, int imageId)
+    : Actor(world, imageId, startX, startY, randInt(0, 1) * 180, 1.0, 0),
+      minX(0),
+      maxX(VIEW_WIDTH - SPRITE_WIDTH) {}
+
+void Enemy::bonk(Actor *other) {
+    if (!other->isPeach())
+        return;
+
+    StudentWorld &world = getWorld();
+    Peach *peach = world.getPeach();
+
+    if (peach->getPowers() & Peach::STAR) {
+        world.playSound(SOUND_PLAYER_KICK);
+        takeDamage();
+    }
+}
+
+void Enemy::takeDamage() {
+    getWorld().increaseScore(100);
+    die();
+}
+
+Goomba::Goomba(StudentWorld &world, double startX, double startY)
+    : Enemy(world, startX, startY, IID_GOOMBA) {}
+
+bool Goomba::testPosition(double x, double y, bool bonk) {
+    return getMinX() <= x && x <= getMaxX() && Actor::testPosition(x, y, bonk);
+}
+
+void Goomba::doSomething() {
+    if (!isAlive())
+        return;
+
+    StudentWorld &world = getWorld();
+
+    if (overlappingWithPeach()) {
+        world.getPeach()->bonk(this);
+        return;
+    }
+
+    bool right = getDirection() == 0;
+    double dx = right ? 1 : -1;
+    if (!attemptMove(dx, 0, false)) {
+        setDirection(right ? 180 : 0);
+    }
 }
