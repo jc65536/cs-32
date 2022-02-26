@@ -19,6 +19,11 @@ StudentWorld::StudentWorld(string assetPath)
     : GameWorld(assetPath) {
 }
 
+template<typename T>
+void createPowerup(StudentWorld &world, double startX, double startY) {
+    world.addActor(new T(world, startX, startY));
+}
+
 int StudentWorld::init() {
     // Initialize provided level loader class
     Level level(assetPath());
@@ -50,39 +55,42 @@ int StudentWorld::init() {
 
             switch (gridEntry) {
             case Level::block:
-                addActor<Block>(x, y);
+                addActor(new Block(*this, x, y));
                 break;
             case Level::empty:
                 empty = true;
                 break;
             case Level::flag:
-                addActor<Flag>(x, y);
+                addActor(new Flag(*this, x, y));
                 break;
             case Level::flower_goodie_block:
-                addActor<Block>(x, y)->setPowerup(Flower::create);
+                addActor(new Block(*this, x, y, createPowerup<Flower>));
                 break;
             case Level::goomba:
-                enemy = addActor<Goomba>(x, y);
+                enemy = new Goomba(*this, x, y);
+                addActor(enemy);
                 break;
             case Level::koopa:
-                enemy = addActor<Koopa>(x, y);
+                enemy = new Koopa(*this, x, y);
+                addActor(enemy);
                 break;
             case Level::mario:
-                addActor<Mario>(x, y);
+                addActor(new Mario(*this, x, y));
                 break;
             case Level::mushroom_goodie_block:
-                addActor<Block>(x, y)->setPowerup(Mushroom::create);
+                addActor(new Block(*this, x, y, createPowerup<Mushroom>));
                 break;
             case Level::peach:
-                peach = addActor<Peach>(x, y);
+                peach = new Peach(*this, x, y);
+                addActor(peach);
                 break;
             case Level::pipe:
-                addActor<Pipe>(x, y);
+                addActor(new Pipe(*this, x, y));
                 break;
             case Level::piranha:
                 break;
             case Level::star_goodie_block:
-                addActor<Block>(x, y)->setPowerup(Star::create);
+                addActor(new Block(*this, x, y, createPowerup<Star>));
                 break;
             }
 

@@ -14,7 +14,7 @@ public:
     virtual void doSomething(){};
     virtual void bonk(Actor *other) {}
 
-    virtual bool isPeach() { return false; }
+    bool isPeach();
     virtual bool passable() = 0;
     virtual bool damageable() = 0;
 
@@ -44,7 +44,6 @@ public:
                      FIRE = 0b0010,
                      STAR = 0b0100;
 
-    bool isPeach() override { return true; }
     bool passable() override { return true; }
     bool damageable() override { return true; }
 
@@ -55,6 +54,8 @@ public:
 private:
     int hp;
     int powers;
+    int fireCountdown;
+    int starCountdown;
     int jumpDistance;
     bool grounded;
 };
@@ -176,13 +177,36 @@ public:
 
 class Block : public Pipe {
 public:
-    Block(StudentWorld &world, double startX, double startY);
+    Block(StudentWorld &world, double startX, double startY, void (*create)(StudentWorld &, double, double) = nullptr);
 
     void bonk(Actor *other) override;
-    void setPowerup(void (*creator)(StudentWorld &, double, double));
 
 private:
     void (*createPowerup)(StudentWorld &, double, double);
+};
+
+//==============================================================================
+// Projectiles
+
+class Projectile : public Actor {
+public:
+    Projectile(StudentWorld &world, int imageId, double startX, double startY, int startDirection);
+
+    void doSomething() override;
+
+    bool passable() override { return true; }
+    bool damageable() override { return false; }
+
+protected:
+    virtual bool shouldDamage(Actor *actor) = 0;
+};
+
+class PeachFireball : public Projectile {
+public:
+    PeachFireball(StudentWorld &world, double startX, double startY, int startDirection);
+
+protected:
+    bool shouldDamage(Actor *actor) { return actor->damageable() && !actor->isPeach(); }
 };
 
 //==============================================================================

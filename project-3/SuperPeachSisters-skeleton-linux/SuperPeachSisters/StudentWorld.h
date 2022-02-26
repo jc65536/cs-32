@@ -21,12 +21,7 @@ public:
     void finishLevel() { returnCode = GWSTATUS_FINISHED_LEVEL; }
     void winGame() { returnCode = GWSTATUS_PLAYER_WON; }
 
-    template <typename T>
-    T *addActor(double startX, double startY) {
-        T *actor = new T(*this, startX, startY);
-        actors.push_back(actor);
-        return actor;
-    }
+    void addActor(Actor *actor) { actors.push_back(actor); }
 
     ~StudentWorld();
 

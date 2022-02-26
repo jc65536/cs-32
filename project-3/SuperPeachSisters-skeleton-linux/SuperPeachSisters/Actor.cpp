@@ -53,6 +53,10 @@ bool Actor::testPosition(double x, double y, bool bonk) {
     return result;
 }
 
+bool Actor::isPeach() {
+    return this == getWorld().getPeach();
+}
+
 bool Actor::overlappingWithPeach() {
     Peach *peach = world.getPeach();
     return areColliding(getX(), getY(), peach->getX(), peach->getY());
@@ -76,7 +80,9 @@ void Peach::doSomething() {
 
     // Decrement Star Power
     // Decrement iframes
-    // Decrement fireball delay
+
+    fireCountdown &&fireCountdown--;
+
     // Hit any objects
 
     list<Actor *> collidingActors = world.findCollidingActors(this);
@@ -113,7 +119,10 @@ void Peach::doSomething() {
                 jumpDistance = powers & Peach::JUMP ? 12 : 8;
             break;
         case KEY_PRESS_SPACE:
-            if (powers & Peach::FIRE) {
+            if (powers & Peach::FIRE && !fireCountdown) {
+                world.playSound(SOUND_PLAYER_FIRE);
+                fireCountdown = 8;
+
             }
             break;
         }
@@ -129,13 +138,9 @@ void Peach::bonk(Actor *other) {
 Pipe::Pipe(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 2, 1.0) {}
 
-Block::Block(StudentWorld &world, double startX, double startY)
+Block::Block(StudentWorld &world, double startX, double startY, void (*create)(StudentWorld &, double, double))
     : Pipe(world, startX, startY, IID_BLOCK),
-      createPowerup(nullptr) {}
-
-void Block::setPowerup(void (*create)(StudentWorld &, double, double)) {
-    createPowerup = create;
-}
+      createPowerup(create) {}
 
 void Block::bonk(Actor *other) {
     StudentWorld &world = getWorld();
@@ -208,21 +213,21 @@ Flower::Flower(StudentWorld &world, double startX, double startY)
     : Powerup(world, IID_FLOWER, startX, startY) {}
 
 void Flower::create(StudentWorld &world, double startX, double startY) {
-    world.addActor<Flower>(startX, startY);
+    world.addActor(new Flower(world, startX, startY));
 }
 
 Mushroom::Mushroom(StudentWorld &world, double startX, double startY)
     : Powerup(world, IID_MUSHROOM, startX, startY) {}
 
 void Mushroom::create(StudentWorld &world, double startX, double startY) {
-    world.addActor<Mushroom>(startX, startY);
+    world.addActor(new Mushroom(world, startX, startY));
 }
 
 Star::Star(StudentWorld &world, double startX, double startY)
     : Powerup(world, IID_STAR, startX, startY) {}
 
 void Star::create(StudentWorld &world, double startX, double startY) {
-    world.addActor<Star>(startX, startY);
+    world.addActor(new Star(world, startX, startY));
 }
 
 //==============================================================================
@@ -271,10 +276,34 @@ void Goomba::doSomething() {
 
     bool right = getDirection() == 0;
     double dx = right ? 1 : -1;
-    if (!attemptMove(dx, 0, false)) {
+    if (!attemptMove(dx, 0, false))
         setDirection(right ? 180 : 0);
-    }
 }
 
 Koopa::Koopa(StudentWorld &world, double startX, double startY)
     : Goomba(world, startX, startY, IID_KOOPA) {}
+
+//==============================================================================
+// Projectiles
+
+Projectile::Projectile(StudentWorld &world, int imageId,
+                       double startX, double startY, int startDirection)
+    : Actor(world, imageId, startX, startY, startDirection, 1, 1.0) {}
+
+void Projectile::doSomething() {
+    StudentWorld &world = getWorld();
+    list<Actor *> collidingActors = world.findCollidingActors(this);
+    for (Actor *actor : collidingActors) {
+        if (shouldDamage(actor))
+            actor->bonk(this);
+    }
+
+    attemptMove(0, -2);
+
+    double dx = getDirection() == 0 ? 2 : -2;
+    if (!attemptMove(dx, 0))
+        die();
+}
+
+PeachFireball::PeachFireball(StudentWorld &world, double startX, double startY, int startDirection)
+    : Projectile(world, IID_PEACH_FIRE, startX, startY, startDirection) {}
