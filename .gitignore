@@ -2,6 +2,6 @@ bin/
 *.zip
 
 project-3/SuperPeachSisters-sample-linux
-project-3/SuperPeachSisters-skeleton-linux/Assets
-project-3/SuperPeachSisters-skeleton-linux/SuperPeachSisters
+project-3/SuperPeachSisters-skeleton-linux/SuperPeachSisters/Assets
+project-3/SuperPeachSisters-skeleton-linux/SuperPeachSisters/SuperPeachSisters
 *.o
