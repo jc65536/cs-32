@@ -20,7 +20,7 @@ StudentWorld::StudentWorld(string assetPath)
 }
 
 template <typename T>
-void createPowerup(StudentWorld &world, double startX, double startY) {
+void spawnPowerup(StudentWorld &world, double startX, double startY) {
     world.addActor(new T(world, startX, startY));
 }
 
@@ -65,7 +65,7 @@ int StudentWorld::init() {
                 addActor(new Flag(*this, x, y));
                 break;
             case Level::flower_goodie_block:
-                addActor(new Block(*this, x, y, createPowerup<Flower>));
+                addActor(new Block(*this, x, y, spawnPowerup<Flower>));
                 break;
             case Level::goomba:
                 enemy = new Goomba(*this, x, y);
@@ -79,7 +79,7 @@ int StudentWorld::init() {
                 addActor(new Mario(*this, x, y));
                 break;
             case Level::mushroom_goodie_block:
-                addActor(new Block(*this, x, y, createPowerup<Mushroom>));
+                addActor(new Block(*this, x, y, spawnPowerup<Mushroom>));
                 break;
             case Level::peach:
                 peach = new Peach(*this, x, y);
@@ -92,7 +92,7 @@ int StudentWorld::init() {
                 addActor(new Piranha(*this, x, y));
                 break;
             case Level::star_goodie_block:
-                addActor(new Block(*this, x, y, createPowerup<Star>));
+                addActor(new Block(*this, x, y, spawnPowerup<Star>));
                 break;
             }
 
@@ -148,13 +148,13 @@ int StudentWorld::move() {
     }
 
     ostringstream format;
-    int powers = peach->getPowers();
     format << "Lives: " << getLives() <<
         "  Level: " << getLevel() <<
         "  Points: " << getScore() <<
-        (powers & Peach::STAR ? "  StarPower!" : "") <<
-        (powers & Peach::FIRE ? "  ShootPower!" : "") <<
-        (powers & Peach::JUMP ? "  JumpPower!" : "") << endl;
+        (peach->hasPower(Peach::STAR) ? "  StarPower!" : "") <<
+        (peach->hasPower(Peach::FIRE) ? "  ShootPower!" : "") <<
+        (peach->hasPower(Peach::JUMP) ? "  JumpPower!" : "") <<
+        endl;
     setGameStatText(format.str());
 
     return status;

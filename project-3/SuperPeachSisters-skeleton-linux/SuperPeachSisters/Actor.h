@@ -47,7 +47,7 @@ public:
 
     void setHp(int hp) { this->hp = hp; }
     void addPower(int power);
-    int getPowers() { return powers; }
+    bool hasPower(int power) { return powers & power; }
 
     bool passable() override { return true; }
     bool damageable() override { return true; }
@@ -189,15 +189,17 @@ public:
     bool damageable() override { return false; }
 };
 
+using SpawnFunction = void (*)(StudentWorld &, double, double);
+
 class Block : public Pipe {
 public:
     Block(StudentWorld &world, double startX, double startY,
-          void (*create)(StudentWorld &, double, double) = nullptr);
+          SpawnFunction spawn = nullptr);
 
     void bonk(Actor *other) override;
 
 private:
-    void (*createPowerup)(StudentWorld &, double, double);
+    SpawnFunction spawnPowerup;
 };
 
 //==============================================================================

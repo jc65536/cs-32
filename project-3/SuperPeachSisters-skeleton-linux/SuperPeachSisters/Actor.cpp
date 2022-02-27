@@ -31,7 +31,6 @@ Actor::Actor(StudentWorld &world, int imageId, double startX, double startY,
       alive(true) {}
 
 bool Actor::attemptMove(double dx, double dy, bool bonk) {
-    bool attemptSuccessful = true;
     double newX = getX() + dx, newY = getY() + dy;
     if (testPosition(newX, newY, bonk)) {
         moveTo(newX, newY);
@@ -42,16 +41,15 @@ bool Actor::attemptMove(double dx, double dy, bool bonk) {
 }
 
 bool Actor::testPosition(double x, double y, bool bonk) {
-    bool result = true;
     list<Actor *> collidingActors = getWorld().findCollidingActors(this, x, y);
     for (Actor *actor : collidingActors) {
         if (!actor->passable()) {
             if (bonk)
                 actor->bonk(this);
-            result = false;
+            return false;
         }
     }
-    return result;
+    return true;
 }
 
 bool Actor::isPeach() {
@@ -67,7 +65,7 @@ bool Actor::overlappingWithPeach() {
 // Peach
 
 Peach::Peach(StudentWorld &world, double startX, double startY)
-    : Actor(world, IID_PEACH, startX, startY, 0, 1, 1.0),
+    : Actor(world, IID_PEACH, startX, startY, 0, 0, 1.0),
       hp(1),
       powers(0),
       jumpDistance(0),
@@ -87,19 +85,20 @@ void Peach::doSomething() {
             powers &= ~Peach::STAR;
     }
 
+    // Invincibility status is implied by checking if the countdown > 0
     if (invincibilityCountdown > 0)
         invincibilityCountdown--;
 
     if (fireCountdown > 0)
         fireCountdown--;
 
+    // Bonk any objects
     list<Actor *> collidingActors = world.findCollidingActors(this);
     for (Actor *actor : collidingActors) {
         actor->bonk(this);
     }
 
     if (jumpDistance > 0) {
-        // Jump logic
         if (attemptMove(0, 4, true)) {
             jumpDistance--;
             grounded = false;
@@ -107,7 +106,7 @@ void Peach::doSomething() {
             jumpDistance = 0;
         }
     } else {
-        // Fall logic
+        // Fall if not jumping
         grounded = !attemptMove(0, -4);
     }
 
@@ -124,13 +123,13 @@ void Peach::doSomething() {
             break;
         case KEY_PRESS_UP:
             if (grounded) {
-                jumpDistance = powers & Peach::JUMP ? 12 : 8;
+                jumpDistance = hasPower(Peach::JUMP) ? 12 : 8;
                 world.playSound(SOUND_PLAYER_JUMP);
                 cerr << "SOUND_PLAYER_JUMP" << endl;
             }
             break;
         case KEY_PRESS_SPACE:
-            if (powers & Peach::FIRE && !fireCountdown) {
+            if (hasPower(Peach::FIRE) && fireCountdown == 0) {
                 world.playSound(SOUND_PLAYER_FIRE);
                 cerr << "SOUND_PLAYER_FIRE" << endl;
                 fireCountdown = 8;
@@ -153,9 +152,9 @@ void Peach::bonk(Actor *other) {
 }
 
 void Peach::takeDamage() {
-    if (invincibilityCountdown > 0 || powers & Peach::STAR)
+    if (invincibilityCountdown > 0 || hasPower(Peach::STAR))
         return;
-    
+
     hp--;
     invincibilityCountdown = 10;
     powers = 0;
@@ -175,17 +174,17 @@ Pipe::Pipe(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 2, 1.0) {}
 
 Block::Block(StudentWorld &world, double startX, double startY,
-             void (*create)(StudentWorld &, double, double))
+             SpawnFunction spawn)
     : Pipe(world, startX, startY, IID_BLOCK),
-      createPowerup(create) {}
+      spawnPowerup(spawn) {}
 
 void Block::bonk(Actor *other) {
     StudentWorld &world = getWorld();
-    if (createPowerup) {
+    if (spawnPowerup) {
         world.playSound(SOUND_POWERUP_APPEARS);
         cerr << "SOUND_POWERUP_APPEARS" << endl;
-        createPowerup(world, getX(), getY() + 8);
-        createPowerup = nullptr;
+        spawnPowerup(world, getX(), getY() + 8);
+        spawnPowerup = nullptr;
     } else {
         world.playSound(SOUND_PLAYER_BONK);
         cerr << "SOUND_PLAYER_BONK" << endl;
@@ -263,7 +262,7 @@ void Enemy::bonk(Actor *other) {
     StudentWorld &world = getWorld();
     Peach *peach = world.getPeach();
 
-    if (peach->getPowers() & Peach::STAR) {
+    if (peach->hasPower(Peach::STAR)) {
         world.playSound(SOUND_PLAYER_KICK);
         cerr << "SOUND_PLAYER_KICK" << endl;
         takeDamage();
