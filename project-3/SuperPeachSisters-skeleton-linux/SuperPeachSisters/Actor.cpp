@@ -152,6 +152,7 @@ void Peach::bonk(Actor *other) {
 }
 
 void Peach::takeDamage() {
+    return;
     if (invincibilityCountdown > 0 || hasPower(Peach::STAR))
         return;
 
@@ -173,18 +174,17 @@ void Peach::takeDamage() {
 Pipe::Pipe(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 2, 1.0) {}
 
-Block::Block(StudentWorld &world, double startX, double startY,
-             SpawnFunction spawn)
+Block::Block(StudentWorld &world, double startX, double startY, bool hasPowerup)
     : Pipe(world, startX, startY, IID_BLOCK),
-      spawnPowerup(spawn) {}
+      hasPowerup(hasPowerup) {}
 
 void Block::bonk(Actor *other) {
     StudentWorld &world = getWorld();
-    if (spawnPowerup) {
+    if (hasPowerup) {
         world.playSound(SOUND_POWERUP_APPEARS);
         cerr << "SOUND_POWERUP_APPEARS" << endl;
-        spawnPowerup(world, getX(), getY() + 8);
-        spawnPowerup = nullptr;
+        world.addActor(makePowerup());
+        hasPowerup = false;
     } else {
         world.playSound(SOUND_PLAYER_BONK);
         cerr << "SOUND_PLAYER_BONK" << endl;

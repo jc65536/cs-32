@@ -19,11 +19,6 @@ StudentWorld::StudentWorld(string assetPath)
     : GameWorld(assetPath) {
 }
 
-template <typename T>
-void spawnPowerup(StudentWorld &world, double startX, double startY) {
-    world.addActor(new T(world, startX, startY));
-}
-
 int StudentWorld::init() {
     // Initialize provided level loader class
     Level level(assetPath());
@@ -65,7 +60,7 @@ int StudentWorld::init() {
                 addActor(new Flag(*this, x, y));
                 break;
             case Level::flower_goodie_block:
-                addActor(new Block(*this, x, y, spawnPowerup<Flower>));
+                addActor(new PowerupBlock<Flower>(*this, x, y));
                 break;
             case Level::goomba:
                 enemy = new Goomba(*this, x, y);
@@ -79,7 +74,7 @@ int StudentWorld::init() {
                 addActor(new Mario(*this, x, y));
                 break;
             case Level::mushroom_goodie_block:
-                addActor(new Block(*this, x, y, spawnPowerup<Mushroom>));
+                addActor(new PowerupBlock<Mushroom>(*this, x, y));
                 break;
             case Level::peach:
                 peach = new Peach(*this, x, y);
@@ -92,7 +87,7 @@ int StudentWorld::init() {
                 addActor(new Piranha(*this, x, y));
                 break;
             case Level::star_goodie_block:
-                addActor(new Block(*this, x, y, spawnPowerup<Star>));
+                addActor(new PowerupBlock<Star>(*this, x, y));
                 break;
             }
 
