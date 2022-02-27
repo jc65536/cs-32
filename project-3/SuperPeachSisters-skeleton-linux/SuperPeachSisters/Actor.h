@@ -12,9 +12,10 @@ public:
     Actor(StudentWorld &world, int imageId, double startX, double startY,
           int startDirection, int depth, double size);
 
-    virtual void doSomething(){};
+    virtual void doSomething() {}
     virtual void bonk(Actor *other) {}
     virtual bool testPosition(double x, double y, bool bonk);
+    virtual void takeDamage() {}
 
     bool isPeach();
     virtual bool passable() = 0;
@@ -38,6 +39,7 @@ public:
 
     void doSomething() override;
     void bonk(Actor *other) override;
+    void takeDamage() override;
 
     static const int JUMP = 0b0001,
                      FIRE = 0b0010,
@@ -128,11 +130,11 @@ private:
 
 class Enemy : public Actor {
 public:
-    Enemy(StudentWorld &world, double startX, double startY, int imageId);
+    Enemy(StudentWorld &world, int imageId, double startX, double startY);
 
     void bonk(Actor *other) override;
 
-    virtual void takeDamage();
+    virtual void takeDamage() override;
 
     double getMinX() { return minX; }
     double getMaxX() { return maxX; }
@@ -158,6 +160,18 @@ public:
 class Koopa : public Goomba {
 public:
     Koopa(StudentWorld &world, double startX, double startY);
+
+    void takeDamage() override;
+};
+
+class Piranha : public Enemy {
+public:
+    Piranha(StudentWorld &world, double startX, double startY);
+
+    void doSomething() override;
+
+private:
+    int fireCountdown;
 };
 
 //==============================================================================
@@ -204,6 +218,24 @@ class PeachFireball : public Projectile {
 public:
     PeachFireball(StudentWorld &world, double startX, double startY,
                   int startDirection);
+
+protected:
+    bool shouldDamage(Actor *actor) { return actor->damageable() && !actor->isPeach(); }
+};
+
+class PiranhaFireball : public Projectile {
+public:
+    PiranhaFireball(StudentWorld &world, double startX, double startY,
+                    int startDirection);
+
+protected:
+    bool shouldDamage(Actor *actor) { return actor->isPeach(); }
+};
+
+class Shell : public Projectile {
+public:
+    Shell(StudentWorld &world, double startX, double startY,
+          int startDirection);
 
 protected:
     bool shouldDamage(Actor *actor) { return actor->damageable() && !actor->isPeach(); }

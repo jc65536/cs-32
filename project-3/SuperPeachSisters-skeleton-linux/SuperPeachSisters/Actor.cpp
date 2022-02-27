@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "GameConstants.h"
 #include "StudentWorld.h"
+#include <cmath>
 #include <iostream>
 #include <list>
 #include <random>
@@ -139,6 +140,9 @@ void Peach::doSomething() {
 void Peach::bonk(Actor *other) {
 }
 
+void Peach::takeDamage() {
+}
+
 //==============================================================================
 // Obstacles
 
@@ -229,7 +233,7 @@ Star::Star(StudentWorld &world, double startX, double startY)
 //==============================================================================
 // Enemies
 
-Enemy::Enemy(StudentWorld &world, double startX, double startY, int imageId)
+Enemy::Enemy(StudentWorld &world, int imageId, double startX, double startY)
     : Actor(world, imageId, startX, startY, randInt(0, 1) * 180, 1.0, 0),
       minX(0),
       maxX(VIEW_WIDTH - SPRITE_WIDTH) {}
@@ -254,7 +258,7 @@ void Enemy::takeDamage() {
 }
 
 Goomba::Goomba(StudentWorld &world, double startX, double startY, int imageId)
-    : Enemy(world, startX, startY, imageId) {}
+    : Enemy(world, imageId, startX, startY) {}
 
 bool Goomba::testPosition(double x, double y, bool bonk) {
     return getMinX() <= x && x <= getMaxX() && Actor::testPosition(x, y, bonk);
@@ -280,6 +284,49 @@ void Goomba::doSomething() {
 Koopa::Koopa(StudentWorld &world, double startX, double startY)
     : Goomba(world, startX, startY, IID_KOOPA) {}
 
+void Koopa::takeDamage() {
+    Enemy::takeDamage();
+    StudentWorld &world = getWorld();
+    world.addActor(new Shell(world, getX(), getY(), getDirection()));
+}
+
+Piranha::Piranha(StudentWorld &world, double startX, double startY)
+    : Enemy(world, IID_PIRANHA, startX, startY),
+      fireCountdown(0) {}
+
+void Piranha::doSomething() {
+    if (!isAlive())
+        return;
+
+    increaseAnimationNumber();
+
+    StudentWorld &world = getWorld();
+    Peach *peach = world.getPeach();
+
+    if (overlappingWithPeach()) {
+        peach->bonk(this);
+        return;
+    }
+
+    if (abs(peach->getY() - getY()) >= 1.5 * SPRITE_HEIGHT)
+        return;
+
+    int xDifference = peach->getX() - getX();
+    setDirection(xDifference > 0 ? 0 : 180);
+
+    if (fireCountdown) {
+        fireCountdown--;
+        return;
+    }
+
+    if (abs(xDifference) < 8 * SPRITE_WIDTH) {
+        world.addActor(new PiranhaFireball(world, getX(), getY(), getDirection()));
+        world.playSound(SOUND_PIRANHA_FIRE);
+        cerr << "SOUND_PIRANHA_FIRE" << endl;
+        fireCountdown = 40;
+    }
+}
+
 //==============================================================================
 // Projectiles
 
@@ -291,8 +338,11 @@ void Projectile::doSomething() {
     StudentWorld &world = getWorld();
     list<Actor *> collidingActors = world.findCollidingActors(this);
     for (Actor *actor : collidingActors) {
-        if (shouldDamage(actor))
-            actor->bonk(this);
+        if (shouldDamage(actor)) {
+            actor->takeDamage();
+            die();
+            return;
+        }
     }
 
     attemptMove(0, -2);
@@ -305,3 +355,11 @@ void Projectile::doSomething() {
 PeachFireball::PeachFireball(StudentWorld &world, double startX, double startY,
                              int startDirection)
     : Projectile(world, IID_PEACH_FIRE, startX, startY, startDirection) {}
+
+PiranhaFireball::PiranhaFireball(StudentWorld &world, double startX, double startY,
+                                 int startDirection)
+    : Projectile(world, IID_PIRANHA_FIRE, startX, startY, startDirection) {}
+
+Shell::Shell(StudentWorld &world, double startX, double startY,
+             int startDirection)
+    : Projectile(world, IID_SHELL, startX, startY, startDirection) {}

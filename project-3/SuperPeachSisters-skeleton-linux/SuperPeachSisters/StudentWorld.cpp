@@ -89,6 +89,7 @@ int StudentWorld::init() {
                 addActor(new Pipe(*this, x, y));
                 break;
             case Level::piranha:
+                addActor(new Piranha(*this, x, y));
                 break;
             case Level::star_goodie_block:
                 addActor(new Block(*this, x, y, createPowerup<Star>));
@@ -156,7 +157,7 @@ list<Actor *> StudentWorld::findCollidingActors(Actor *self, double x, double y)
         y = self->getY();
     list<Actor *> collidingActors;
     for (Actor *actor : actors) {
-        if (actor != self && areColliding(x, y, actor->getX(), actor->getY()))
+        if (actor != self && actor->isAlive() && areColliding(x, y, actor->getX(), actor->getY()))
             collidingActors.push_back(actor);
     }
     return collidingActors;
