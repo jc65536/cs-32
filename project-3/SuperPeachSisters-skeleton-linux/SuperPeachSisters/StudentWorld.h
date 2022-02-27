@@ -21,13 +21,12 @@ public:
     Peach *getPeach() { return peach; }
     void addActor(Actor *actor) { actors.push_back(actor); }
 
-    void finishLevel() { returnCode = GWSTATUS_FINISHED_LEVEL; }
-    void winGame() { returnCode = GWSTATUS_PLAYER_WON; }
+    void setStatus(int status) { this->status = status; }
 
 private:
     std::list<Actor *> actors;
     Peach *peach;
-    int returnCode;
+    int status;
 };
 
 #endif // STUDENTWORLD_H_

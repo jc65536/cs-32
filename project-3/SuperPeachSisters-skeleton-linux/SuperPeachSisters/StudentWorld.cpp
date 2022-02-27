@@ -128,7 +128,7 @@ int StudentWorld::init() {
 }
 
 int StudentWorld::move() {
-    returnCode = GWSTATUS_CONTINUE_GAME;
+    status = GWSTATUS_CONTINUE_GAME;
 
     auto it = actors.begin();
     while (it != actors.end()) {
@@ -137,6 +137,9 @@ int StudentWorld::move() {
         if (actor->isAlive()) {
             it++;
         } else if (actor == peach) {
+            playSound(SOUND_PLAYER_DIE);
+            cerr << "SOUND_PLAYER_DIE" << endl;
+            decLives();
             return GWSTATUS_PLAYER_DIED;
         } else {
             delete actor;
@@ -154,7 +157,7 @@ int StudentWorld::move() {
         (powers & Peach::JUMP ? "  JumpPower!" : "") << endl;
     setGameStatText(format.str());
 
-    return returnCode;
+    return status;
 }
 
 list<Actor *> StudentWorld::findCollidingActors(Actor *self, double x, double y) {

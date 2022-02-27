@@ -200,22 +200,15 @@ Flag::Flag(StudentWorld &world, double startX, double startY, int imageId)
 
 void Flag::doSomething() {
     if (overlappingWithPeach()) {
-        getWorld().increaseScore(1000);
-        gameSignal();
+        StudentWorld &world = getWorld();
+        world.increaseScore(1000);
+        world.setStatus(gameSignal());
         die();
     }
 }
 
-void Flag::gameSignal() {
-    getWorld().finishLevel();
-}
-
 Mario::Mario(StudentWorld &world, double startX, double startY)
     : Flag(world, startX, startY, IID_MARIO) {}
-
-void Mario::gameSignal() {
-    getWorld().winGame();
-}
 
 //==============================================================================
 // Powerups

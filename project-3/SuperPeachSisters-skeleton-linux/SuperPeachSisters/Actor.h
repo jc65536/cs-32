@@ -69,17 +69,19 @@ public:
 
     void doSomething() override;
 
-    virtual void gameSignal();
-
     bool passable() override { return true; }
     bool damageable() override { return false; }
+
+protected:
+    virtual int gameSignal() { return GWSTATUS_FINISHED_LEVEL; }
 };
 
 class Mario : public Flag {
 public:
     Mario(StudentWorld &world, double startX, double startY);
 
-    void gameSignal() override;
+private:
+    int gameSignal() { return GWSTATUS_PLAYER_WON; }
 };
 
 //==============================================================================
