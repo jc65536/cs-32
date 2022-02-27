@@ -19,7 +19,7 @@ StudentWorld::StudentWorld(string assetPath)
     : GameWorld(assetPath) {
 }
 
-template<typename T>
+template <typename T>
 void createPowerup(StudentWorld &world, double startX, double startY) {
     world.addActor(new T(world, startX, startY));
 }
@@ -136,6 +136,8 @@ int StudentWorld::move() {
         actor->doSomething();
         if (actor->isAlive()) {
             it++;
+        } else if (actor == peach) {
+            return GWSTATUS_PLAYER_DIED;
         } else {
             delete actor;
             it = actors.erase(it);
@@ -144,7 +146,12 @@ int StudentWorld::move() {
 
     ostringstream format;
     int powers = peach->getPowers();
-    format << "Lives: " << getLives() << "  Level: " << getLevel() << "  Points: " << getScore() << (powers & Peach::STAR ? "  StarPower!" : "") << (powers & Peach::FIRE ? "  ShootPower!" : "") << (powers & Peach::JUMP ? "  JumpPower!" : "") << endl;
+    format << "Lives: " << getLives() <<
+        "  Level: " << getLevel() <<
+        "  Points: " << getScore() <<
+        (powers & Peach::STAR ? "  StarPower!" : "") <<
+        (powers & Peach::FIRE ? "  ShootPower!" : "") <<
+        (powers & Peach::JUMP ? "  JumpPower!" : "") << endl;
     setGameStatText(format.str());
 
     return returnCode;

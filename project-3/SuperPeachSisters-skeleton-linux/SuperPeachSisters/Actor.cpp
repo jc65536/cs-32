@@ -81,12 +81,17 @@ void Peach::doSomething() {
 
     StudentWorld &world = getWorld();
 
-    // Decrement Star Power
-    // Decrement iframes
+    if (starCountdown > 0) {
+        starCountdown--;
+        if (starCountdown == 0)
+            powers &= ~Peach::STAR;
+    }
 
-    fireCountdown &&fireCountdown--;
+    if (invincibilityCountdown > 0)
+        invincibilityCountdown--;
 
-    // Hit any objects
+    if (fireCountdown > 0)
+        fireCountdown--;
 
     list<Actor *> collidingActors = world.findCollidingActors(this);
     for (Actor *actor : collidingActors) {
@@ -137,10 +142,30 @@ void Peach::doSomething() {
     }
 }
 
+void Peach::addPower(int power) {
+    if (power == Peach::STAR)
+        starCountdown = 150;
+    powers |= power;
+}
+
 void Peach::bonk(Actor *other) {
+    takeDamage();
 }
 
 void Peach::takeDamage() {
+    if (invincibilityCountdown > 0 || powers & Peach::STAR)
+        return;
+    
+    hp--;
+    invincibilityCountdown = 10;
+    powers = 0;
+
+    if (hp > 0) {
+        getWorld().playSound(SOUND_PLAYER_HURT);
+        cerr << "SOUND_PLAYER_HURT" << endl;
+    } else {
+        die();
+    }
 }
 
 //==============================================================================

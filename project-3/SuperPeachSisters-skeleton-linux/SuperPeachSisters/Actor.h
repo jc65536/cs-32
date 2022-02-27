@@ -46,7 +46,7 @@ public:
                      STAR = 0b0100;
 
     void setHp(int hp) { this->hp = hp; }
-    void addPower(int power) { powers |= power; }
+    void addPower(int power);
     int getPowers() { return powers; }
 
     bool passable() override { return true; }
@@ -56,6 +56,7 @@ private:
     int hp;
     int powers;
     int fireCountdown;
+    int invincibilityCountdown;
     int starCountdown;
     int jumpDistance;
     bool grounded;
