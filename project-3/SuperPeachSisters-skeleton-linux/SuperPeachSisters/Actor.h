@@ -226,7 +226,7 @@ public:
                   int startDirection);
 
 protected:
-    bool shouldDamage(Actor *actor) { return actor->damageable() && !actor->isPeach(); }
+    bool shouldDamage(Actor *actor) override { return actor->damageable() && !actor->isPeach(); }
 };
 
 class PiranhaFireball : public Projectile {
@@ -235,7 +235,7 @@ public:
                     int startDirection);
 
 protected:
-    bool shouldDamage(Actor *actor) { return actor->isPeach(); }
+    bool shouldDamage(Actor *actor) override { return actor->isPeach(); }
 };
 
 class Shell : public Projectile {
@@ -244,7 +244,7 @@ public:
           int startDirection);
 
 protected:
-    bool shouldDamage(Actor *actor) { return actor->damageable() && !actor->isPeach(); }
+    bool shouldDamage(Actor *actor) override { return actor->damageable() && !actor->isPeach(); }
 };
 
 //==============================================================================
