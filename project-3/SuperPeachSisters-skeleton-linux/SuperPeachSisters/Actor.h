@@ -83,7 +83,7 @@ public:
     Mario(StudentWorld &world, double startX, double startY);
 
 private:
-    int status() { return GWSTATUS_PLAYER_WON; }
+    int status() override { return GWSTATUS_PLAYER_WON; }
 };
 
 //==============================================================================
@@ -108,8 +108,8 @@ public:
     Flower(StudentWorld &world, double startX, double startY);
 
 private:
-    int points() { return 50; }
-    int power() { return Peach::FIRE; }
+    int points() override { return 50; }
+    int power() override { return Peach::FIRE; }
 };
 
 class Mushroom : public Powerup {
@@ -117,8 +117,8 @@ public:
     Mushroom(StudentWorld &world, double startX, double startY);
 
 private:
-    int points() { return 75; }
-    int power() { return Peach::JUMP; }
+    int points() override { return 75; }
+    int power() override { return Peach::JUMP; }
 };
 
 class Star : public Powerup {
@@ -126,8 +126,8 @@ public:
     Star(StudentWorld &world, double startX, double startY);
 
 private:
-    int points() { return 100; }
-    int power() { return Peach::STAR; }
+    int points() override { return 100; }
+    int power() override { return Peach::STAR; }
 };
 
 //==============================================================================
