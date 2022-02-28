@@ -184,7 +184,7 @@ void Block::bonk(Actor *other) {
     if (spawnPowerup) {
         world.playSound(SOUND_POWERUP_APPEARS);
         cerr << "SOUND_POWERUP_APPEARS" << endl;
-        spawnPowerup(world, getX(), getY() + 8);
+        spawnPowerup(world, getX(), getY() + SPRITE_HEIGHT);
         spawnPowerup = nullptr;
     } else {
         world.playSound(SOUND_PLAYER_BONK);
