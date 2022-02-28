@@ -237,7 +237,9 @@ public:
                     int startDirection);
 
 protected:
-    bool shouldDamage(Actor *actor) override { return actor->isPeach(); }
+    bool shouldDamage(Actor *actor) override {
+        return actor->isPeach();
+    }
 };
 
 class Shell : public Projectile {
