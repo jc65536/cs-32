@@ -186,3 +186,35 @@ virtual void takeDamage()
 - This function is virtual but not pure virtual because Koopa does something
   extra when it takes damage, so it will need to override it. All other enemies
   do not need to override it.
+
+double setMinX(double x)
+- Sets the minX member variable.
+- I declared this function in the Enemy class because StudentWorld needs to set
+  an enemy's min x coordinate based on the previous row of actors.
+- This function is not virtual because no enemy needs to override it.
+
+double setMaxX(double x)
+- Sets the maxX member variable.
+- I declared this function in the Enemy class because StudentWorld needs to set
+  an enemy's max x coordinate based on the previous row of actors.
+- This function is not virtual because no enemy needs to override it.
+
+bool passable()
+- Returns true.
+- I declared this function in the Enemy class because all enemies are passable.
+- This function is not virtual because no enemy needs to override it.
+
+bool damageable()
+- Returns true.
+- I declared this function in the Enemy class because all enemies are
+  damageable.
+- This function is not virtual because no enemy needs to override it.
+
+class Goomba
+
+void doSomething()
+- Bonks peach if it's colliding with her and moves according to the spec.
+- I declared this function in the Goomba class because the spec specifies these
+  behaviors for Goomba.
+- This function is not virtual because Koopa does not need to override it.
+

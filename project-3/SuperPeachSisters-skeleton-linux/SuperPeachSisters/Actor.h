@@ -161,6 +161,8 @@ public:
            int imageId = IID_GOOMBA);
 
     void doSomething() override;
+
+protected:
     bool testPosition(double x, double y, bool bonk) override;
 };
 
