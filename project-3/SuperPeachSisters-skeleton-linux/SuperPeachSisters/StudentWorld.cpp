@@ -157,6 +157,17 @@ int StudentWorld::move() {
         endl;
     setGameStatText(format.str());
 
+    switch (status) {
+    case GWSTATUS_FINISHED_LEVEL:
+        playSound(SOUND_FINISHED_LEVEL);
+        cerr << "SOUND_FINISHED_LEVEL" << endl;
+        break;
+    case GWSTATUS_PLAYER_WON:
+        playSound(SOUND_GAME_OVER);
+        cerr << "SOUND_GAME_OVER" << endl;
+        break;
+    }
+
     return status;
 }
 
