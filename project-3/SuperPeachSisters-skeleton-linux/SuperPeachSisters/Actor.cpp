@@ -248,7 +248,7 @@ Star::Star(StudentWorld &world, double startX, double startY)
 // Enemies
 
 Enemy::Enemy(StudentWorld &world, int imageId, double startX, double startY)
-    : Actor(world, imageId, startX, startY, randInt(0, 1) * 180, 1.0, 0),
+    : Actor(world, imageId, startX, startY, randInt(0, 1) * 180, 0, 1.0),
       minX(0),
       maxX(VIEW_WIDTH - SPRITE_WIDTH) {}
 
@@ -257,9 +257,7 @@ void Enemy::bonk(Actor *other) {
         return;
 
     StudentWorld &world = getWorld();
-    Peach *peach = world.getPeach();
-
-    if (peach->hasPower(Peach::STAR)) {
+    if (world.getPeach()->hasPower(Peach::STAR)) {
         world.playSound(SOUND_PLAYER_KICK);
         cerr << "SOUND_PLAYER_KICK" << endl;
         takeDamage();
