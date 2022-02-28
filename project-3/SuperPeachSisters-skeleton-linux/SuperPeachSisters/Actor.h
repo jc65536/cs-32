@@ -141,13 +141,15 @@ public:
 
     virtual void takeDamage() override;
 
-    double getMinX() { return minX; }
-    double getMaxX() { return maxX; }
     void setMinX(double x) { minX = x; }
     void setMaxX(double x) { maxX = x; }
 
     bool passable() override { return true; }
     bool damageable() override { return true; }
+
+protected:
+    double getMinX() { return minX; }
+    double getMaxX() { return maxX; }
 
 private:
     double minX, maxX;

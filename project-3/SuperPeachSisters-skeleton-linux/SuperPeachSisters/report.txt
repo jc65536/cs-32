@@ -8,26 +8,26 @@ class StudentWorld
 list<Actor *> findCollidingActors(Actor *self, double x = -1, double y = -1)
 - Returns a list of actors that collide with self, with optional x an y
   parameters to test a hypothetical location.
-- I defined this function in the StudentWorld class because StudentWorld has
+- I declared this function in the StudentWorld class because StudentWorld has
   the most direct access to the list of actors.
 - This function is not virtual since StudentWorld is not a base class.
 
 Peach *getPeach()
 - Returns the pointer to Peach.
-- I defined this function in the StudentWorld class because it holds the single
-  pointer to Peach.
+- I declared this function in the StudentWorld class because it holds the
+  single pointer to Peach.
 - This function is not virtual since StudentWorld is not a base class.
 
 void addActor(Actor *actor)
 - Adds the given actor pointer to the universal list of actors
-- I defined this function in the StudentWorld class because StudentWorld has
-  the most direct access to the list of actors.
+- I declared this function in the StudentWorld class because some actors need
+  to spawn new actors through their StudentWorld reference.
 - This function is not virtual since StudentWorld is not a base class.
 
 void setStatus(int status)
 - Tells the move() function to return some other status code. Used by the flag
   and Mario classes.
-- I defined this function in the StudentWorld class because it affects the
+- I declared this function in the StudentWorld class because it affects the
   behavior of the move() function.
 - This function is not virtual since StudentWorld is not a base class.
 
@@ -35,15 +35,154 @@ class Actor
 
 virtual void doSomething()
 - Does nothing.
-- I defined this function in the Actor class because StudentWorld needs to be
+- I declared this function in the Actor class because StudentWorld needs to be
   able to tell any actor to do something in the move() function.
 - This function is virtual but not pure virtual since it makes sense that if a
   derived class does not override doSomething(), it will do nothing by default.
 
 virtual void bonk(Actor *other)
 - Does nothing.
-- I defined this function in the Actor class because actors need to be able to
-  bonk any other overlapping actor.
+- I declared this function in the Actor class because actors need to be able to
+  bonk any colliding actors through an Actor pointer.
 - This function is virtual but not pure virtual since it makes sense that if a
   derived class does not override bonk(), it will do nothing by default.
 
+virtual void takeDamage()
+- Does nothing.
+- I declared this function in the Actor class because actors (e.g. projectiles)
+  need to be able to damage any colliding actors through an Actor pointer.
+- This function is virtual but not pure virtual since it makes sense that if a
+  derived class does not override takeDamage(), it will do nothing by default.
+
+bool isPeach();
+- Returns whether this actor is Peach.
+- I declared this function in the Actor class because actors (e.g. enemies and
+  blocks) need to check whether the actor that bonked it is Peach.
+- This function is neither virtual nor pure virtual because the base
+  implementation works for all derived classes.
+
+virtual bool passable()
+- Returns whether this actor can be passed through.
+- I declared this function in the Actor class because actors need to check
+  whether any colliding actors are passable through an Actor pointer.
+- This function is pure virtual because only concrete classes derived from
+  Actor can have the property of being passable, and there is no obvious
+  default for most actors.
+
+virtual bool damageable()
+- Returns whether this actor can be damaged.
+- I declared this function in the Actor class because actors need to check
+  whether any colliding actors are damageable through an Actor pointer.
+- This function is pure virtual because only concrete classes derived from
+  Actor can have the property of being damageable, and there is no obvious
+  default for most actors.
+
+bool isAlive()
+- Returns whether this actor is alive.
+- I declared this function in the Actor class because StudentWorld needs to
+  check whether an actor is alive through an Actor pointer and because all
+  actors have an alive state that could be checked.
+- This function is not virtual because the base implementation works for all
+  derived classes.
+
+class Peach
+
+void doSomething()
+- Decrements any countdowns, bonks all colliding actors, attempts to move based
+  on user input and jumping status, and spawns fireballs if need be.
+- I declared this function in the Peach class because the spec specifies these
+  behaviors for Peach.
+- This function is not virtual because Peach is not a base class.
+
+void bonk()
+- Makes Peach take damage.
+- I declared this function in the Peach class because enemies need to be able
+  to bonk Peach.
+- This function is not virtual because Peach is not a base class.
+
+void takeDamage()
+- Decreases hp and/or kills Peach only if Peach is not invincible
+- I declared this function in the Peach class because Peach needs to react to damage.
+- This function is not virtual because Peach is not a base class.
+
+void addPower(int power)
+- Updates Peach's internal powers state to have the indicated power.
+- I declared this function in the Peach class so that powerups can modify
+  Peach's powers state.
+- This function is not virtual because Peach is not a base class.
+
+bool hasPower(int power)
+- Returns whether Peach has a power.
+- I declared this function in the Peach class because enemies need to know if
+  Peach has star power.
+- This function is not virtual because Peach is not a base class.
+
+bool passable()
+- Returns true.
+- I declared this function in the Peach class because Peach needs to override
+  Actor's pure virtual function.
+- This function is not virtual because Peach is not a base class.
+
+bool damageable()
+- Returns true.
+- I declared this function in the Peach class because Peach needs to override
+  Actor's pure virtual function.
+- This function is not virtual because Peach is not a base class.
+
+class Flag
+
+void doSomething()
+- If it is colliding with Peach, updates score and sets the game status to the
+  appropriate status.
+- I declared this function in the Flag class because the spec specifies these
+  behaviors for Flag.
+- This function is not virtual because Mario does not need to override it.
+
+bool passable()
+- Returns true.
+- I declared this function in the Flag class because Flat needs to override
+  Actor's pure virtual function.
+- This function is not virtual because Mario does not need to override it.
+
+bool damageable()
+- Returns false.
+- I declared this function in the Flag class because Flag needs to override
+  Actor's pure virtual function.
+- This function is not virtual because Mario does not need to override it.
+
+class Powerup
+
+void doSomething()
+- If it is colliding with Peach, increase score and grant Peach the appropriate
+  powers. Otherwise, move according to the spec.
+- I declared this function in the Powerup class because the spec specifies
+  these behaviors for all powerups.
+- This function is not virtual because no powerup needs to override it.
+
+bool passable()
+- Returns true.
+- I declared this function in the Powerup class because all powerups are
+  passable.
+- This function is not virtual because no powerup needs to override it.
+
+bool damageable()
+- Returns false.
+- I declared this function in the Powerup class because no powerups are
+  damageable.
+- This function is not virtual because no powerup needs to override it.
+
+class Enemy
+
+void bonk(Actor *other)
+- Makes the enemy take damage if other is Peach and she has star power.
+- I declared this function in the Enemy class because all enemies handle bonks
+  this way.
+- This function is not virtual because no enemy needs to override it.
+
+virtual void takeDamage()
+- Increases the score and kills the enemy.
+- I declared this function in the Enemy class because all enemies include this
+  behavior when they take damage.
+- This function is virtual but not pure virtual because Koopa does something
+  extra when it takes damage, so it will need to override it. All other enemies
+  do not need to override it.
