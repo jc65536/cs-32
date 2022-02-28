@@ -191,27 +191,16 @@ public:
     bool damageable() override { return false; }
 };
 
+using SpawnFunction = void (*)(StudentWorld &, double, double);
+
 class Block : public Pipe {
 public:
-    Block(StudentWorld &world, double startX, double startY, bool hasPowerup = false);
+    Block(StudentWorld &world, double startX, double startY, SpawnFunction spawn = nullptr);
 
     void bonk(Actor *other) override;
 
-protected:
-    virtual Powerup *makePowerup() { return nullptr; }
-
 private:
-    bool hasPowerup;
-};
-
-template<class T>
-class PowerupBlock : public Block {
-public:
-    PowerupBlock(StudentWorld &world, double startX, double startY)
-        : Block(world, startX, startY, true) {}
-
-protected:
-    Powerup *makePowerup() override { return new T(getWorld(), getX(), getY() + 8); }
+    SpawnFunction spawnPowerup;
 };
 
 //==============================================================================

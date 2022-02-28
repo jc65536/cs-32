@@ -175,17 +175,17 @@ void Peach::takeDamage() {
 Pipe::Pipe(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 2, 1.0) {}
 
-Block::Block(StudentWorld &world, double startX, double startY, bool hasPowerup)
+Block::Block(StudentWorld &world, double startX, double startY, SpawnFunction spawn)
     : Pipe(world, startX, startY, IID_BLOCK),
-      hasPowerup(hasPowerup) {}
+      spawnPowerup(spawn) {}
 
 void Block::bonk(Actor *other) {
     StudentWorld &world = getWorld();
-    if (hasPowerup) {
+    if (spawnPowerup) {
         world.playSound(SOUND_POWERUP_APPEARS);
         cerr << "SOUND_POWERUP_APPEARS" << endl;
-        world.addActor(makePowerup());
-        hasPowerup = false;
+        spawnPowerup(world, getX(), getY() + 8);
+        spawnPowerup = nullptr;
     } else {
         world.playSound(SOUND_PLAYER_BONK);
         cerr << "SOUND_PLAYER_BONK" << endl;
