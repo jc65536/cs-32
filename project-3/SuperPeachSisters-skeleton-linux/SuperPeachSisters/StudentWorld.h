@@ -12,9 +12,9 @@
 class StudentWorld : public GameWorld {
 public:
     StudentWorld(std::string assetPath);
-    virtual int init();
-    virtual int move();
-    virtual void cleanUp();
+    int init() override;
+    int move() override;
+    void cleanUp() override;
     ~StudentWorld();
 
     std::list<Actor *> findCollidingActors(Actor *self, double x = -1, double y = -1);
