@@ -3,4 +3,47 @@ classes, and why you chose to define each member function in its host class;
 also explain why (or why not) you decided to make each function virtual or pure
 virtual.
 
+class StudentWorld
+
+list<Actor *> findCollidingActors(Actor *self, double x = -1, double y = -1)
+- Returns a list of actors that collide with self, with optional x an y
+  parameters to test a hypothetical location.
+- I defined this function in the StudentWorld class because StudentWorld has
+  the most direct access to the list of actors.
+- This function is not virtual since StudentWorld is not a base class.
+
+Peach *getPeach()
+- Returns the pointer to Peach.
+- I defined this function in the StudentWorld class because it holds the single
+  pointer to Peach.
+- This function is not virtual since StudentWorld is not a base class.
+
+void addActor(Actor *actor)
+- Adds the given actor pointer to the universal list of actors
+- I defined this function in the StudentWorld class because StudentWorld has
+  the most direct access to the list of actors.
+- This function is not virtual since StudentWorld is not a base class.
+
+void setStatus(int status)
+- Tells the move() function to return some other status code. Used by the flag
+  and Mario classes.
+- I defined this function in the StudentWorld class because it affects the
+  behavior of the move() function.
+- This function is not virtual since StudentWorld is not a base class.
+
+class Actor
+
+virtual void doSomething()
+- Does nothing.
+- I defined this function in the Actor class because StudentWorld needs to be
+  able to tell any actor to do something in the move() function.
+- This function is virtual but not pure virtual since it makes sense that if a
+  derived class does not override doSomething(), it will do nothing by default.
+
+virtual void bonk(Actor *other)
+- Does nothing.
+- I defined this function in the Actor class because actors need to be able to
+  bonk any other overlapping actor.
+- This function is virtual but not pure virtual since it makes sense that if a
+  derived class does not override bonk(), it will do nothing by default.
 

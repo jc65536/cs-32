@@ -14,7 +14,6 @@ public:
 
     virtual void doSomething() {}
     virtual void bonk(Actor *other) {}
-    virtual bool testPosition(double x, double y, bool bonk);
     virtual void takeDamage() {}
 
     bool isPeach();
@@ -26,6 +25,7 @@ protected:
     StudentWorld &getWorld() { return world; }
     void die() { alive = false; }
     bool attemptMove(double dx, double dy, bool bonk = false);
+    virtual bool testPosition(double x, double y, bool bonk);
     bool collidingWithPeach();
 
 private:
