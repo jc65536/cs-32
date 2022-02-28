@@ -41,7 +41,7 @@ bool Actor::attemptMove(double dx, double dy, bool bonk) {
 }
 
 bool Actor::testPosition(double x, double y, bool bonk) {
-    list<Actor *> collidingActors = getWorld().findCollidingActors(this, x, y);
+    list<Actor *> collidingActors = world.findCollidingActors(this, x, y);
     for (Actor *actor : collidingActors) {
         if (!actor->passable()) {
             if (bonk)
@@ -53,7 +53,7 @@ bool Actor::testPosition(double x, double y, bool bonk) {
 }
 
 bool Actor::isPeach() {
-    return this == getWorld().getPeach();
+    return this == world.getPeach();
 }
 
 bool Actor::overlappingWithPeach() {
@@ -142,9 +142,11 @@ void Peach::doSomething() {
 }
 
 void Peach::addPower(int power) {
+    powers |= power;
     if (power == Peach::STAR)
         starCountdown = 150;
-    powers |= power;
+    else
+        hp = 2;
 }
 
 void Peach::bonk(Actor *other) {
@@ -152,8 +154,7 @@ void Peach::bonk(Actor *other) {
 }
 
 void Peach::takeDamage() {
-    return;
-    if (invincibilityCountdown > 0 || hasPower(Peach::STAR))
+    if (hasPower(Peach::STAR) || invincibilityCountdown > 0)
         return;
 
     hp--;
@@ -192,17 +193,17 @@ void Block::bonk(Actor *other) {
 }
 
 //==============================================================================
-// Flag
+// Flags
 
 Flag::Flag(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 1, 1.0) {}
 
 void Flag::doSomething() {
-    if (overlappingWithPeach()) {
+    if (isAlive() && overlappingWithPeach()) {
         StudentWorld &world = getWorld();
         world.increaseScore(1000);
-        world.setStatus(gameSignal());
         die();
+        world.setStatus(status());
     }
 }
 
@@ -218,11 +219,8 @@ Powerup::Powerup(StudentWorld &world, int imageId, double startX, double startY)
 void Powerup::doSomething() {
     StudentWorld &world = getWorld();
     if (overlappingWithPeach()) {
-        // Increase score by points()
         world.increaseScore(points());
-        Peach *peach = world.getPeach();
-        peach->setHp(2);
-        peach->addPower(power());
+        world.getPeach()->addPower(power());
         die();
         world.playSound(SOUND_PLAYER_POWERUP);
         cerr << "SOUND_PLAYER_POWERUP" << endl;
@@ -233,9 +231,8 @@ void Powerup::doSomething() {
 
     bool right = getDirection() == 0;
     int dx = right ? 2 : -2;
-    if (!attemptMove(dx, 0)) {
+    if (!attemptMove(dx, 0))
         setDirection(right ? 180 : 0);
-    }
 }
 
 Flower::Flower(StudentWorld &world, double startX, double startY)
@@ -294,7 +291,7 @@ void Goomba::doSomething() {
 
     bool right = getDirection() == 0;
     double dx = right ? 1 : -1;
-    if (!attemptMove(dx, 0, false))
+    if (!attemptMove(dx, 0))
         setDirection(right ? 180 : 0);
 }
 

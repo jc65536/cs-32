@@ -45,7 +45,6 @@ public:
                      FIRE = 0b0010,
                      STAR = 0b0100;
 
-    void setHp(int hp) { this->hp = hp; }
     void addPower(int power);
     bool hasPower(int power) { return powers & power; }
 
@@ -62,6 +61,9 @@ private:
     bool grounded;
 };
 
+//==============================================================================
+// Flags
+
 class Flag : public Actor {
 public:
     Flag(StudentWorld &world, double startX, double startY,
@@ -73,7 +75,7 @@ public:
     bool damageable() override { return false; }
 
 protected:
-    virtual int gameSignal() { return GWSTATUS_FINISHED_LEVEL; }
+    virtual int status() { return GWSTATUS_FINISHED_LEVEL; }
 };
 
 class Mario : public Flag {
@@ -81,7 +83,7 @@ public:
     Mario(StudentWorld &world, double startX, double startY);
 
 private:
-    int gameSignal() { return GWSTATUS_PLAYER_WON; }
+    int status() { return GWSTATUS_PLAYER_WON; }
 };
 
 //==============================================================================
@@ -91,7 +93,7 @@ class Powerup : public Actor {
 public:
     Powerup(StudentWorld &world, int imageId, double startX, double startY);
 
-    void doSomething();
+    void doSomething() override;
 
     bool passable() override { return true; }
     bool damageable() override { return false; }
