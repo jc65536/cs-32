@@ -162,7 +162,7 @@ public:
 
     void doSomething() override;
 
-protected:
+private:
     bool testPosition(double x, double y, bool bonk) override;
 };
 
