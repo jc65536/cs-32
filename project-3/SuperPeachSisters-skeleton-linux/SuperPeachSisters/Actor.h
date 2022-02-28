@@ -26,7 +26,7 @@ protected:
     StudentWorld &getWorld() { return world; }
     void die() { alive = false; }
     bool attemptMove(double dx, double dy, bool bonk = false);
-    bool overlappingWithPeach();
+    bool collidingWithPeach();
 
 private:
     bool alive;

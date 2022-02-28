@@ -20,7 +20,6 @@ public:
     std::list<Actor *> findCollidingActors(Actor *self, double x = -1, double y = -1);
     Peach *getPeach() { return peach; }
     void addActor(Actor *actor) { actors.push_back(actor); }
-
     void setStatus(int status) { this->status = status; }
 
 private:

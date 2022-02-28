@@ -56,7 +56,7 @@ bool Actor::isPeach() {
     return this == world.getPeach();
 }
 
-bool Actor::overlappingWithPeach() {
+bool Actor::collidingWithPeach() {
     Peach *peach = world.getPeach();
     return areColliding(getX(), getY(), peach->getX(), peach->getY());
 }
@@ -199,7 +199,7 @@ Flag::Flag(StudentWorld &world, double startX, double startY, int imageId)
     : Actor(world, imageId, startX, startY, 0, 1, 1.0) {}
 
 void Flag::doSomething() {
-    if (isAlive() && overlappingWithPeach()) {
+    if (isAlive() && collidingWithPeach()) {
         StudentWorld &world = getWorld();
         world.increaseScore(1000);
         die();
@@ -218,7 +218,7 @@ Powerup::Powerup(StudentWorld &world, int imageId, double startX, double startY)
 
 void Powerup::doSomething() {
     StudentWorld &world = getWorld();
-    if (overlappingWithPeach()) {
+    if (collidingWithPeach()) {
         world.increaseScore(points());
         world.getPeach()->addPower(power());
         die();
@@ -282,7 +282,7 @@ void Goomba::doSomething() {
 
     StudentWorld &world = getWorld();
 
-    if (overlappingWithPeach()) {
+    if (collidingWithPeach()) {
         world.getPeach()->bonk(this);
         return;
     }
@@ -315,7 +315,7 @@ void Piranha::doSomething() {
     StudentWorld &world = getWorld();
     Peach *peach = world.getPeach();
 
-    if (overlappingWithPeach()) {
+    if (collidingWithPeach()) {
         peach->bonk(this);
         return;
     }
