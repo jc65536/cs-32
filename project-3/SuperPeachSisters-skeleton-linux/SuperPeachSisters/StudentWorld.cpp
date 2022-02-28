@@ -19,7 +19,7 @@ StudentWorld::StudentWorld(string assetPath)
     : GameWorld(assetPath) {
 }
 
-template<class T>
+template <class T>
 void spawnPowerup(StudentWorld &world, double startX, double startY) {
     world.addActor(new T(world, startX, startY));
 }
@@ -130,32 +130,15 @@ int StudentWorld::init() {
 int StudentWorld::move() {
     status = GWSTATUS_CONTINUE_GAME;
 
-    auto it = actors.begin();
-    while (it != actors.end()) {
-        Actor *actor = *it;
+    for (Actor *actor : actors) {
         actor->doSomething();
-        if (actor->isAlive()) {
-            it++;
-        } else if (actor == peach) {
+        if (!peach->isAlive()) {
             playSound(SOUND_PLAYER_DIE);
             cerr << "SOUND_PLAYER_DIE" << endl;
             decLives();
             return GWSTATUS_PLAYER_DIED;
-        } else {
-            delete actor;
-            it = actors.erase(it);
         }
     }
-
-    ostringstream format;
-    format << "Lives: " << getLives() <<
-        "  Level: " << getLevel() <<
-        "  Points: " << getScore() <<
-        (peach->hasPower(Peach::STAR) ? "  StarPower!" : "") <<
-        (peach->hasPower(Peach::FIRE) ? "  ShootPower!" : "") <<
-        (peach->hasPower(Peach::JUMP) ? "  JumpPower!" : "") <<
-        endl;
-    setGameStatText(format.str());
 
     switch (status) {
     case GWSTATUS_FINISHED_LEVEL:
@@ -165,6 +148,27 @@ int StudentWorld::move() {
     case GWSTATUS_PLAYER_WON:
         playSound(SOUND_GAME_OVER);
         cerr << "SOUND_GAME_OVER" << endl;
+        break;
+    case GWSTATUS_CONTINUE_GAME:
+        auto it = actors.begin();
+        while (it != actors.end()) {
+            Actor *actor = *it;
+            if (actor->isAlive()) {
+                it++;
+            } else {
+                delete actor;
+                it = actors.erase(it);
+            }
+        }
+
+        ostringstream format;
+        format << "Lives: " << getLives();
+        format << "  Level: " << getLevel();
+        format << "  Points: " << getScore();
+        format << (peach->hasPower(Peach::STAR) ? " StarPower!" : "");
+        format << (peach->hasPower(Peach::FIRE) ? " ShootPower!" : "");
+        format << (peach->hasPower(Peach::JUMP) ? " JumpPower!" : "");
+        setGameStatText(format.str());
         break;
     }
 
