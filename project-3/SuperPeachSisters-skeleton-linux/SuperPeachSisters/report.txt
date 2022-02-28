@@ -1,7 +1,7 @@
-A high-level description of each of your public member functions in each of your
-classes, and why you chose to define each member function in its host class;
-also explain why (or why not) you decided to make each function virtual or pure
-virtual.
+Part 1. A high-level description of each of your public member functions in
+        each of your classes, and why you chose to define each member function
+        in its host class; also explain why (or why not) you decided to make
+        each function virtual or pure virtual.
 
 class StudentWorld
 
@@ -102,7 +102,8 @@ void bonk()
 
 void takeDamage()
 - Decreases hp and/or kills Peach only if Peach is not invincible
-- I declared this function in the Peach class because Peach needs to react to damage.
+- I declared this function in the Peach class because Peach needs to react to
+  damage.
 - This function is not virtual because Peach is not a base class.
 
 void addPower(int power)
@@ -218,3 +219,82 @@ void doSomething()
   behaviors for Goomba.
 - This function is not virtual because Koopa does not need to override it.
 
+class Koopa
+
+void takeDamage()
+- Increases score, kills the Koopa, and spawns a new Shell.
+- I declared this function in the Koopa class because it needs to do more than
+  Enemy's takeDamage().
+- This function is not virtual because Koopa is not a base class.
+
+class Piranha
+
+void doSomething()
+- Cycles animation, bonks Peach if it's colliding with her, and shoots
+  fireballs if the conditions are right.
+- I declared this function in the Piranha class because the spec specifies these
+  behaviors for Piranha.
+- This function is not virtual because Piranha is not a base class.
+
+class Pipe
+
+bool passable()
+- Returns false.
+- I declared this function in the Pipe class because Pipes and Blocks are not
+  passable.
+- This function is not virtual because Block does not need to override it.
+
+bool damageable()
+- Returns false.
+- I declared this function in the Pipe class because Pipes and Blocks are not
+  damageable.
+- This function is not virtual because Block does not need to override it.
+
+class Block
+
+void bonk(Actor *other)
+- Spawns a powerup once if it was configured to do so; otherwise, play a sound.
+- I declared this function in the Block class because the spec specifies these
+  behaviors for Block.
+- This function is not virtual because Block is not a base class.
+
+class Projectile
+
+void doSomething()
+- If it's colliding with a suitable actor, bonk it and die; otherwise, move
+  according to the spec.
+- I declared this function in the Projectile class because all projectiles bonk
+  actors and move the same way.
+- This function is not virtual because no projectile needs to override it.
+
+bool passable()
+- Returns true.
+- I declared this function in the Projectile class because all projectiles are
+  passable.
+- This function is not virtual because no projectile needs to override it.
+
+bool damageable()
+- Returns false.
+- I declared this function in the Projectile class because no projectiles are
+  damageable.
+- This function is not virtual because no Projectile needs to override it.
+
+
+Part 2. A list of all functionality that you failed to finish as well as known
+        bugs in your classes.
+
+I don't believe I am missing any functionality. A known bug is that no sound
+would play, even though I think I'm using the playSound function correctly. In
+addition to playing sound, I have added cerr statements to display any sound
+events.
+
+
+Part 3. A list of other design decisions and assumptions you made.
+
+- I assumed that Peach can only bonk a single actor per tick. The sample
+  program's behavior suggests that this is the right thing to do.
+
+- I assumed that storing a pointer to a spawn function does not violate the
+  scary red text on pages 28 and 49 because the FAQ claims that using a private
+  enum is not a violation as long as there are no member functions to let
+  outsiders know the type of object.
