@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. ../global
+
+g32 -O2 -o ../bin/hw4 sorts.cpp && echo "Compiled successfully." && ../bin/hw4

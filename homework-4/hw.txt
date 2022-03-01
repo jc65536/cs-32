@@ -1,0 +1,43 @@
+Problem 2
+There is a compilation error because the insert function relies on the == and <
+operators to compare the keys between two nodes. However, the Coord class
+doesn't define either operator, meaning it's uncomparable, so the compile
+wouldn't be able to compile the insert function in a Map<Coord, int>.
+
+Problem 3e
+Calling vector::push_back() possibly invalidates iterators to the vector (p in
+test case 3), which causes the next use of the iterator to produce undefined
+behavior. Test cases 1 and 2 have no errors because accessing vectors by index
+(1) does not dereference invalid iterators, and calling list::push_back() (2)
+never invalidates iterators to the list.
+
+Problem 4b
+Without a path parameter to record the history, a class would have no way of
+knowing its ancestors' names. We could partially get around this problem by
+having the class's parent print its own name in the for loop, but it wouldn't
+work for ancestors older than grandparents.
+
+Problem 5a
+This algorithm is O(N^3) because it has 3 nested for loops which each iterate
+about N times.
+
+Problem 5b
+The time complexity is still O(N^3) because the j loop iterates a total of
+
+    0 + 1 + ... + (N - 2) = (N - 2)(N - 1) / 2 = N^2/2 - 3N/2 + 1
+
+times, which is still O(N^2). The k loop adds another factor of N, so the entire
+algorithm is still O(N^3).
+
+Problem 6a
+get() is O(N) since it may loop through each node in the map. insert() is also
+O(N) because it calls findFirstAtLeast, which is also O(N) since, like get(), it
+also loops through each node. Since the O(N) function calls are wrapped in a
+loop that visits each node of m, the entire for loop is O(N^2). Finally, swap()
+is O(1) since it just swaps a pointer. Nothing else in the function has a higher
+order than the for loop, so the entire function has O(N^2) time complexity.
+
+Problem 6b
+This function has O(N) time complexity because it only loops through each node
+in the map once, without any nesting or calling other functions. It's much
+better than the implementation in part a.

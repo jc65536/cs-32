@@ -17,10 +17,10 @@ PRODUCT = SuperPeachSisters
 all: $(PRODUCT)
 
 %.o: %.cpp $(HEADERS)
-	$(CC) -g -c -fsanitize=address $(STD) $(INCLUDES) $< -o $@
+	$(CC) -c $(STD) $(INCLUDES) $< -o $@
 
 $(PRODUCT): $(OBJECTS) 
-	$(CC) -fsanitize=address $(OBJECTS) $(LIBS) -o $@
+	$(CC) $(OBJECTS) $(LIBS) -o $@
 
 clean:
 	rm -f *.o
