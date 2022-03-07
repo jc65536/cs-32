@@ -46,7 +46,14 @@ public:
         n->value = new ValueType(value);
     }
 
-    ValueType *search(std::string key) const;
+    ValueType *search(std::string key) const {
+        Node *n = root;
+        if (search(key, n) == 0) {
+            return n->value;
+        } else {
+            return nullptr;
+        }
+    }
 
     // REMOVE BEFORE SUBMISSION
     void print() {
@@ -78,7 +85,7 @@ private:
     After the function returns, n will point to the "closest possible" node, and
     key will contain the rest of the key if an exact match couldn't be found.
     */
-    int search(std::string &key, Node *&n) {
+    int search(std::string &key, Node *&n) const {
         if (!n) {
             std::cerr << "n is nullptr!" << std::endl;
             exit(1);

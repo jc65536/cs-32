@@ -13,4 +13,9 @@ int main() {
         i++;
     }
     radixTree.print();
+
+    std::cout << *radixTree.search("hello") << std::endl;
+    std::cout << *radixTree.search("grate") << std::endl;
+    std::cout << radixTree.search("pro") << std::endl;
+    std::cout << radixTree.search("zzz") << std::endl;
 }
