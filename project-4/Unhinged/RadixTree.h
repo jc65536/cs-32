@@ -1,11 +1,12 @@
 #ifndef RADIXTREE_H
 #define RADIXTREE_H
 
-#include "utility.h"
 #include <algorithm>
 #include <iostream>
 #include <list>
 #include <string>
+
+#include "utility.h"
 
 template <class ValueType>
 class RadixTree {
@@ -68,9 +69,9 @@ private:
 
         Node(std::string segment)
             : segment(segment),
-              children(),
-              value() {}
-        
+              children{nullptr},
+              value(nullptr) {}
+
         ~Node() {
             delete value;
         }
@@ -133,7 +134,7 @@ private:
             print(n->children[i], l + 1);
     }
 
-    Node *newNode(std::string segment){
+    Node *newNode(std::string segment) {
         nodes.push_back(Node(segment));
         return &nodes.back();
     }

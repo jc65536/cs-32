@@ -1,0 +1,95 @@
+Problem 1
+a.
+      50
+     /  \
+   20    60
+  /  \     \
+10    40    70
+ \    /    /  \
+ 15  30  64    80
+    /  \      /
+  23    36  75
+
+b.
+Inorder traversal: 10 15 20 23 30 36 40 50 60 64 70 75 80
+Preorder traversal: 50 20 10 15 40 30 23 36 60 70 64 80 75
+Postorder traversal: 15 10 23 36 30 40 20 64 75 80 70 60 50
+
+c.
+       50
+      /  \
+    23    60
+   /  \     \
+ 10    40    70
+  \    /    /  \
+  15  36  64    80
+               /
+             75
+
+
+Problem 2
+a.
+
+    struct Node {
+        Node *parent;
+        Node *left;
+        Node *right;
+        int value;
+    };
+
+b.
+
+    void insert(Node *root, int val):
+        if val < root's value:
+            if root has a left child:
+                insert(root's left child, val)
+            else:
+                construct a new node and set it as root's left child
+                set root as the new node's parent
+        else if val > root's value:
+            if root has a right child:
+                insert(root's right child, val)
+            else:
+                construct a new node and set it as root's right child
+                set root as the new node's parent
+
+
+Problem 3
+a.
+    7
+   / \
+  5   6
+ /\   /
+3  1 2
+
+b.
+{7, 5, 6, 3, 1, 2}
+
+c.
+Resulting tree (for visualization):
+    6
+   / \
+  5   2
+ /\
+3  1
+
+Resulting array:
+{6, 5, 2, 3, 1}
+
+
+Problem 4
+a. O(C + S)
+
+b. O(log(C) + S)
+
+c. O(log(C) + log(S))
+
+d. O(log(S))
+
+e. O(1)
+
+f. O(log(C) + S)
+
+g. O(S * log(S))
+
+h. O(C * log(S))

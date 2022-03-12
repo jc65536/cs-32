@@ -2,12 +2,14 @@
 #define PERSONPROFILE_H
 
 #include <string>
+#include <list>
+
 #include "provided.h"
+#include "RadixTree.h"
 
 class PersonProfile {
 public:
     PersonProfile(std::string name, std::string email);
-    ~PersonProfile();
 
     std::string GetName() const {
         return name;
@@ -24,7 +26,8 @@ public:
 private:
     std::string name;
     std::string email;
-    // One or more attribute-value pairs
+    std::vector<AttValPair> attValPairs;
+    RadixTree<AttValPair *> attValMapper;
 };
 
 #endif // Include guard
