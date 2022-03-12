@@ -27,7 +27,7 @@ private:
     std::string name;
     std::string email;
     std::vector<AttValPair> attValPairs;
-    RadixTree<AttValPair *> attValMapper;
+    RadixTree<char> attValTree;
 };
 
 #endif // Include guard

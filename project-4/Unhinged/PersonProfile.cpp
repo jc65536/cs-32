@@ -6,10 +6,11 @@ PersonProfile::PersonProfile(std::string name, std::string email)
     : name(name), email(email) {}
 
 void PersonProfile::AddAttValPair(const AttValPair &attval) {
-    auto attValPtrPtr = attValMapper.search(attval.attribute + attval.value);
-    if (!attValPtrPtr) {
+    const std::string key = attval.attribute + "\0" + attval.value;
+    char *exists = attValTree.search(key);
+    if (!exists) {
         attValPairs.push_back(attval);
-        attValMapper.insert(&attValPairs.back());
+        attValTree.insert(key, 'x');
     }
 }
 
@@ -18,12 +19,9 @@ int PersonProfile::GetNumAttValPairs() const {
 }
 
 bool PersonProfile::GetAttVal(int attribute_num, AttValPair &attval) const {
-    std::string attribute = attributes[attribute_num];
-    std::string *value = attValMapper.search(attribute);
-    if (!value) {
+    if (attribute_num < 0 || attribute_num >= attValPairs.size())
         return false;
-    } else {
-        attval = AttValPair(attribute, *value);
-        return true;
-    }
+
+    attval = attValPairs[attribute_num];
+    return true;
 }
