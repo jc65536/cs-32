@@ -8,7 +8,7 @@ PersonProfile::PersonProfile(std::string name, std::string email)
     : name(name), email(email) {}
 
 void PersonProfile::AddAttValPair(const AttValPair &attval) {
-    std::string key = attValToKey(attval);
+    std::string key = attValToString(attval);
     char *exists = attValTree.search(key);
     if (!exists) {
         attValPairs.push_back(attval);

@@ -7,7 +7,7 @@
 
 #define NUM_CHARS 128
 
-std::string attValToKey(AttValPair attval);
+std::string attValToString(AttValPair attval);
 
 std::string listToString(const std::list<AttValPair *> &list);
 

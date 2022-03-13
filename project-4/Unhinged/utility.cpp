@@ -4,13 +4,13 @@
 #include "utility.h"
 #include "provided.h"
 
-std::string attValToKey(AttValPair attval) {
+std::string attValToString(AttValPair attval) {
     return attval.attribute + ":\0" + attval.value;
 }
 
 std::string listToString(const std::list<AttValPair *> &list) {
     std::string s = "{";
     for (AttValPair *p : list)
-        s += attValToKey(*p) + ", ";
+        s += attValToString(*p) + ", ";
     return s.substr(0, s.size() - 2) + "}";
 }

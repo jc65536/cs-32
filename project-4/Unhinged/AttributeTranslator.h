@@ -10,10 +10,8 @@
 
 class AttributeTranslator {
 public:
-    //AttributeTranslator();
-    //~AttributeTranslator();
     bool Load(std::string filename);
-    //std::vector<AttValPair> FindCompatibleAttValPairs(const AttValPair &source) const;
+    std::vector<AttValPair> FindCompatibleAttValPairs(const AttValPair &source) const;
 
     // REMOVE BEFORE SUBMISSION
     void print();

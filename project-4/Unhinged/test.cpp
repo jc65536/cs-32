@@ -58,6 +58,14 @@ int main() {
         AttributeTranslator at;
         at.Load("test-attributetranslator.txt");
         at.print();
+        auto v = at.FindCompatibleAttValPairs(AttValPair("favorite_food", "del taco"));
+        for (auto p : v) {
+            std::cout << attValToString(p) << std::endl;
+        }
+        v = at.FindCompatibleAttValPairs(AttValPair("favorite_food", "mexican"));
+        for (auto p : v) {
+            std::cout << attValToString(p) << std::endl;
+        }
     }
     #endif
 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <vector>
 
 #include "AttributeTranslator.h"
 #include "provided.h"
@@ -33,8 +34,8 @@ bool AttributeTranslator::Load(std::string filename) {
         AttValPair source{tokens[0], tokens[1]},
             compat{tokens[2], tokens[3]};
 
-        std::string sourceKey = attValToKey(source),
-                    compatKey = attValToKey(compat);
+        std::string sourceKey = attValToString(source),
+                    compatKey = attValToString(compat);
 
         std::list<AttValPair *> *sourceList = attValTree.search(sourceKey);
         std::list<AttValPair *> *compatList = attValTree.search(compatKey);
@@ -58,6 +59,18 @@ bool AttributeTranslator::Load(std::string filename) {
     }
 
     return true;
+}
+
+std::vector<AttValPair> AttributeTranslator::FindCompatibleAttValPairs(const AttValPair &source) const {
+    std::vector<AttValPair> result;
+    std::list<AttValPair *> *list = attValTree.search(attValToString(source));
+    if (!list)
+        return result;
+    
+    for (auto it = ++list->begin(); it != list->end(); it++)
+        result.push_back(**it);
+
+    return result;
 }
 
 void AttributeTranslator::print() {
