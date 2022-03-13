@@ -1,4 +1,4 @@
-OBJECTS = AttributeTranslator.o MatchMaker.o MemberDatabase.o PersonProfile.o
+OBJECTS = AttributeTranslator.o MatchMaker.o MemberDatabase.o PersonProfile.o utility.o
 HEADERS = $(wildcard *.h)
 OPTIONS = -g -fsanitize=address
 

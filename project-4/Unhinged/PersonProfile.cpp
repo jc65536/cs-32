@@ -1,12 +1,14 @@
 #include <string>
 
 #include "PersonProfile.h"
+#include "provided.h"
+#include "utility.h"
 
 PersonProfile::PersonProfile(std::string name, std::string email)
     : name(name), email(email) {}
 
 void PersonProfile::AddAttValPair(const AttValPair &attval) {
-    const std::string key = attval.attribute + "\0" + attval.value;
+    std::string key = attValToKey(attval);
     char *exists = attValTree.search(key);
     if (!exists) {
         attValPairs.push_back(attval);

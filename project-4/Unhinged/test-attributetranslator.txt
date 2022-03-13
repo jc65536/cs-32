@@ -1,0 +1,4 @@
+favorite_food,del taco,favorite_food,del taco
+favorite_food,del taco,favorite_food,mexican
+favorite_food,del taco,occupation,del taco employee
+favorite_food,taco bell,favorite_food,del taco

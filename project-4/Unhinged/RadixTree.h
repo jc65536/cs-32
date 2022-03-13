@@ -61,6 +61,10 @@ public:
         print(root, 0);
     }
 
+    void print(std::string (*toString)(const ValueType &)) {
+        print(root, 0, toString);
+    }
+
 private:
     struct Node {
         std::string segment;
@@ -132,6 +136,19 @@ private:
         std::cout << std::endl;
         for (int i = 0; i < NUM_CHARS; i++)
             print(n->children[i], l + 1);
+    }
+
+    void print(Node *n, int l, std::string (*toString)(const ValueType &)) {
+        if (!n)
+            return;
+        for (int i = 0; i < l; i++)
+            std::cout << "|";
+        std::cout << n->segment;
+        if (n->value)
+            std::cout << "->" << toString(*n->value);
+        std::cout << std::endl;
+        for (int i = 0; i < NUM_CHARS; i++)
+            print(n->children[i], l + 1, toString);
     }
 
     Node *newNode(std::string segment) {

@@ -4,9 +4,10 @@
 
 #include "RadixTree.h"
 #include "PersonProfile.h"
+#include "AttributeTranslator.h"
 
 #define TESTING_RADIXTREE           0
-#define TESTING_PERSONPROFILE       1
+#define TESTING_PERSONPROFILE       0
 #define TESTING_ATTRIBUTETRANSLATOR 1
 #define TESTING_MEMBERDATABASE      1
 #define TESTING_MATCHMAKER          1
@@ -15,7 +16,7 @@ int main() {
     #if TESTING_RADIXTREE
     {
         RadixTree<int> rt;
-        std::ifstream in("test.txt");
+        std::ifstream in("test-radixtree.txt");
         std::string line;
         int i = 0;
         while (in >> line) {
@@ -54,7 +55,9 @@ int main() {
 
     #if TESTING_ATTRIBUTETRANSLATOR
     {
-
+        AttributeTranslator at;
+        at.Load("test-attributetranslator.txt");
+        at.print();
     }
     #endif
 
