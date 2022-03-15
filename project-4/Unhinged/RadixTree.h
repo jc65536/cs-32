@@ -15,9 +15,10 @@ public:
         root = newNode("ROOT");
     }
 
+    // Complexity: O(1)
     void insert(std::string key, const ValueType &value) {
         Node *n = root;
-        int status = search(key, n);
+        int status = search(key, n); // O(1)
 
         if (status == 0) {
             delete n->value;
@@ -47,13 +48,13 @@ public:
         n->value = new ValueType(value);
     }
 
+    // Complexity: O(1)
     ValueType *search(std::string key) const {
         Node *n = root;
-        if (search(key, n) == 0) {
+        if (search(key, n) == 0) // O(1)
             return n->value;
-        } else {
+        else
             return nullptr;
-        }
     }
 
 private:
@@ -76,17 +77,15 @@ private:
     Starting from n, searches the radix tree as much as possible
     Returns a status code:
         0   Found an exact match
-        -1  No need to factor
+       -1   No need to factor
         n   n is the length of the common factor
     After the function returns, n will point to the "closest possible" node, and
     key will contain the rest of the key if an exact match couldn't be found.
+
+    Complexity: Depends on the size of key, so O(1) since we assume the key size
+    is bounded.
     */
     int search(std::string &key, Node *&n) const {
-        if (!n) {
-            std::cerr << "n is nullptr!" << std::endl;
-            exit(1);
-        }
-
         while (!key.empty()) {
             Node *next = n->children[(int) key[0]];
             if (!next)
@@ -121,6 +120,7 @@ private:
         return &nodes.back();
     }
 
+    // Helps with cleanup; no destructor needed!
     std::list<Node> nodes;
 };
 

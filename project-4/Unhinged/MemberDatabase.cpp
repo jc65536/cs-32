@@ -21,15 +21,15 @@ bool MemberDatabase::LoadDatabase(std::string filename) {
 
         profileTree.insert(email, SharedPersonProfile(*this, name, email));
         SharedPersonProfile *profile = profileTree.search(email);
-        // Reset pointers, otherwise the copy in the tree would be pointing to
-        // freed memory
+        // Reset the root pointer of the copy in the tree, otherwise it would be
+        // pointing to freed memory
         profile->resetTree();
 
         std::getline(in, name); // Consume newline
         std::string line, attribute, value;
         for (int i = 0; i < attValCount; i++) {
             std::getline(in, line);
-            int comma = line.find(',');
+            size_t comma = line.find(',');
             if (comma == std::string::npos)
                 return false;
             attribute = line.substr(0, comma);
@@ -48,14 +48,15 @@ const PersonProfile *MemberDatabase::GetMemberByEmail(std::string email) const {
     return profileTree.search(email);
 }
 
+// Complexity: O(M) where M is the number of matching members
 std::vector<std::string> MemberDatabase::FindMatchingMembers(const AttValPair &input) const {
     std::vector<std::string> results;
     std::string key = attValToString(input);
-    AttValMemberList *attValList = attValListTree.search(key);
+    AttValMemberList *attValList = attValListTree.search(key); // O(1)
     if (!attValList)
         return results;
 
-    for (PersonProfile *profile : attValList->members)
+    for (PersonProfile *profile : attValList->members) // O(M)
         results.push_back(profile->GetEmail());
 
     return results;
@@ -64,18 +65,19 @@ std::vector<std::string> MemberDatabase::FindMatchingMembers(const AttValPair &i
 MemberDatabase::SharedPersonProfile::SharedPersonProfile(MemberDatabase &database, std::string name, std::string email)
     : PersonProfile(name, email), database(database) {}
 
+// Complexity: O(1)
 void MemberDatabase::SharedPersonProfile::AddAttValPair(const AttValPair &attval) {
     std::string key = attValToString(attval);
-    char *exists = attValTree.search(key);
+    char *exists = attValTree.search(key); // O(1)
     if (!exists) {
-        AttValMemberList *attValList = database.attValListTree.search(key);
+        AttValMemberList *attValList = database.attValListTree.search(key); // O(1)
         if (!attValList) { // Database does not yet contain this AttValPair
-            database.attValListTree.insert(key, {attval, {}});
-            attValList = database.attValListTree.search(key);
+            database.attValListTree.insert(key, {attval, {}}); // O(1)
+            attValList = database.attValListTree.search(key); // O(1)
         }
-        attValPairs.push_back(&attValList->attval);
-        attValTree.insert(key, 'x');
-        attValList->members.push_back(this);
+        attValPairs.push_back(&attValList->attval); // O(1)
+        attValTree.insert(key, 'x'); // O(1)
+        attValList->members.push_back(this); // O(1)
     }
 }
 
@@ -83,10 +85,10 @@ int MemberDatabase::SharedPersonProfile::GetNumAttValPairs() const {
     return attValPairs.size();
 }
 
+// Complexity: O(1)
 bool MemberDatabase::SharedPersonProfile::GetAttVal(int attribute_num, AttValPair &attval) const {
     if (attribute_num < 0 || attribute_num >= attValPairs.size())
         return false;
-
     attval = *attValPairs[attribute_num];
     return true;
 }

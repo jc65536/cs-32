@@ -61,12 +61,14 @@ bool AttributeTranslator::Load(std::string filename) {
     return true;
 }
 
+// Complexity: O(1)
 std::vector<AttValPair> AttributeTranslator::FindCompatibleAttValPairs(const AttValPair &source) const {
     std::vector<AttValPair> results;
-    std::list<AttValPair *> *list = attValTree.search(attValToString(source));
+    std::list<AttValPair *> *list = attValTree.search(attValToString(source)); // O(1)
     if (!list)
         return results;
 
+    // O(1) since we're assuming the number of compatible AttValPairs is bounded
     for (auto it = ++list->begin(); it != list->end(); it++)
         results.push_back(**it);
 

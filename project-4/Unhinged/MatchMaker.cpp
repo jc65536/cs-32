@@ -1,4 +1,6 @@
 #include <unordered_set>
+#include <unordered_map>
+#include <utility>
 #include <string>
 #include <vector>
 
@@ -8,7 +10,7 @@
 #include "PersonProfile.h"
 #include "provided.h"
 
-struct AttValHash {
+struct AttValHasher {
     bool operator()(const AttValPair &attval) const {
         return std::hash<std::string>()(attValToString(attval));
     }
@@ -28,38 +30,32 @@ std::vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int
     if (!profile)
         return results;
 
-    std::unordered_set<AttValPair, AttValHash> allCompat;
+    std::unordered_set<AttValPair, AttValHasher> allCompat;
 
     int numAttValPairs = profile->GetNumAttValPairs();
     AttValPair attval;
+    // O(N), where N is the number of AttValPairs
     for (int i = 0; i < numAttValPairs; i++) {
-        profile->GetAttVal(i, attval);
-        std::vector<AttValPair> compat = translator.FindCompatibleAttValPairs(attval);
-        allCompat.insert(compat.begin(), compat.end());
+        profile->GetAttVal(i, attval); // O(1)
+        std::vector<AttValPair> compat = translator.FindCompatibleAttValPairs(attval); // O(1)
+        allCompat.insert(compat.begin(), compat.end()); // O(1)
     }
 
-    RadixTree<int> matchCounts;
-    std::list<std::string> matchEmails;
-    for (const AttValPair &attval : allCompat) {
-        std::vector<std::string> matches = database.FindMatchingMembers(attval);
-        for (std::string email : matches) {
-            int *count = matchCounts.search(email);
-            if (count) {
-                (*count)++;
-            } else {
-                matchEmails.push_back(email);
-                matchCounts.insert(email, 1);
-            }
-        }
+    std::unordered_map<std::string, int> emailCounts;
+    // Overall: O(MN), where M is the number of matching members
+    for (const AttValPair &attval : allCompat) { // O(N)
+        std::vector<std::string> matches = database.FindMatchingMembers(attval); // O(M)
+        for (std::string email : matches) // O(M)
+            emailCounts[email]++;
     }
 
-    for (std::string email : matchEmails) {
-        int *count = matchCounts.search(email);
-        if (*count >= threshold) {
-            results.push_back({email, *count});
-        }
+    // O(M)
+    for (std::pair<const std::string, int> &emailCount : emailCounts) {
+        if (emailCount.second >= threshold)
+            results.push_back({emailCount.first, emailCount.second});
     }
 
+    // O(M log M)
     std::sort(results.begin(), results.end(), compEmailCount);
 
     return results;

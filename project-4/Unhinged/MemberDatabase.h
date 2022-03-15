@@ -15,7 +15,7 @@ public:
     std::vector<std::string> FindMatchingMembers(const AttValPair &input) const;
 
 private:
-    // Reuse AttValPair objects
+    // Save space by using pointers instead of copying strings
     class SharedPersonProfile : public PersonProfile {
     public:
         SharedPersonProfile(MemberDatabase &database, std::string name, std::string email);
@@ -35,6 +35,7 @@ private:
         MemberDatabase &database;
     };
 
+    // Associates each AttValPair with a list of members
     struct AttValMemberList {
         AttValPair attval;
         std::list<SharedPersonProfile *> members;
