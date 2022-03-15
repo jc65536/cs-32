@@ -1,0 +1,146 @@
+Performance/design bugs I haven't been able to squash:
+
+- My code uses 4x as much memory as the sample program
+
+- Due to my design of RadixTree, where nodes live in a linked list and contain
+pointers to its children (who live in the same linked list), a shallow copy does
+not suffice to create an independent copy of the RadixTree. Because I sometimes
+need to insert a RadixTree (e.g. within a PersonProfile) into a RadixTree, this
+can lead to use-after-free errors. That's why my implementation of
+SharedPersonProfile contains a resetTree() function to correct the pointers
+after a copy. Even though this design is janky, it was easier than writing a
+proper copy assignment operator.
+
+Test cases
+
+/* test-radixtree.txt
+hello
+world
+grape
+grate
+grateful
+professional
+professor
+promise
+protein
+*/
+#if TESTING_RADIXTREE
+{
+    RadixTree<int> rt;
+    std::ifstream in("test-radixtree.txt");
+    std::string line;
+    int i = 0;
+    while (in >> line) {
+        rt.insert(line, i);
+        i++;
+    }
+
+    std::cout << *rt.search("hello") << std::endl;
+    std::cout << *rt.search("grate") << std::endl;
+    std::cout << rt.search("pro") << std::endl;
+    std::cout << rt.search("zzz") << std::endl;
+}
+#endif
+
+#if TESTING_PERSONPROFILE
+{
+    PersonProfile p{"Jason", "jasonc224@ucla.edu"};
+    std::cout << p.GetName() << " " << p.GetEmail() << std::endl;
+    {
+        AttValPair a("cats", "a");
+        p.AddAttValPair(a);
+    }
+    p.AddAttValPair(AttValPair("p", "b"));
+    p.AddAttValPair(AttValPair("par", "c"));
+    p.AddAttValPair(AttValPair("parrot", "d"));
+    p.AddAttValPair(AttValPair("party", "e"));
+    p.AddAttValPair(AttValPair("cat", "f"));
+    p.AddAttValPair(AttValPair("p", "g"));
+    int n = p.GetNumAttValPairs();
+    std::cout << n << std::endl;
+    for (int i = 0; i < n; i++) {
+        AttValPair a;
+        p.GetAttVal(i, a);
+        std::cout << a.attribute << "->" << a.value << std::endl;
+    }
+}
+#endif
+
+/* test-attributetranslator.txt
+favorite_food,del taco,favorite_food,del taco
+favorite_food,del taco,favorite_food,mexican
+favorite_food,del taco,occupation,del taco employee
+favorite_food,taco bell,favorite_food,del taco
+*/
+#if TESTING_ATTRIBUTETRANSLATOR
+{
+    AttributeTranslator at;
+    at.Load("test-attributetranslator.txt");
+    auto v = at.FindCompatibleAttValPairs(AttValPair("favorite_food", "del taco"));
+    for (auto p : v) {
+        std::cout << attValToString(p) << std::endl;
+    }
+    v = at.FindCompatibleAttValPairs(AttValPair("favorite_food", "mexican"));
+    for (auto p : v) {
+        std::cout << attValToString(p) << std::endl;
+    }
+}
+#endif
+
+/* test-memberdatabase.txt
+Abdullah Fowler
+AbFow2483@charter.net
+3
+job,architect
+hobby,canyoneering
+hobby,slacklining
+
+Mordechai Hayes
+MHa7@sky.com
+3
+job,accountant
+hobby,origami
+trait,narrow
+
+Titan Adkins
+TiAdkins81471@charter.net
+3
+job,librarian
+hobby,canyoneering
+hobby,martial arts
+
+Emilio Tyson
+EmiliTy3@charter.net
+3
+job,doctor
+hobby,surfing
+hobby,kayaking
+
+*/
+#if TESTING_MEMBERDATABASE
+{
+    MemberDatabase md;
+    assert(md.LoadDatabase("test-memberdatabase.txt"));
+
+    const PersonProfile &p = *md.GetMemberByEmail("AbFow2483@charter.net");
+    std::cout << std::endl << p.GetName() << " " << p.GetEmail() << std::endl;
+    int n = p.GetNumAttValPairs();
+    std::cout << n << std::endl;
+    for (int i = 0; i < n; i++) {
+        AttValPair a;
+        p.GetAttVal(i, a);
+        std::cout << a.attribute << "->" << a.value << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::vector<std::string> v = md.FindMatchingMembers({"hobby", "canyoneering"});
+    for (std::string s : v) {
+        std::cout << s << std::endl;
+    }
+
+    v = md.FindMatchingMembers({"hoxby", "canyoneering"});
+    for (std::string s : v) {
+        std::cout << s << std::endl;
+    }
+}
+#endif
