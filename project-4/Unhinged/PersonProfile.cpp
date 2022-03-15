@@ -13,7 +13,7 @@ void PersonProfile::AddAttValPair(const AttValPair &attval) {
     char *exists = attValTree.search(key); // O(1)
     if (!exists) {
         attValPairs.push_back(attval); // O(1)
-        attValTree.insert(key, 'x'); // O(1)
+        attValTree.insert(key, 'x');   // O(1)
     }
 }
 

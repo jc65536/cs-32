@@ -71,13 +71,13 @@ void MemberDatabase::SharedPersonProfile::AddAttValPair(const AttValPair &attval
     char *exists = attValTree.search(key); // O(1)
     if (!exists) {
         AttValMemberList *attValList = database.attValListTree.search(key); // O(1)
-        if (!attValList) { // Database does not yet contain this AttValPair
-            database.attValListTree.insert(key, {attval, {}}); // O(1)
-            attValList = database.attValListTree.search(key); // O(1)
+        if (!attValList) {                                                  // Database does not yet contain this AttValPair
+            database.attValListTree.insert(key, {attval, {}});              // O(1)
+            attValList = database.attValListTree.search(key);               // O(1)
         }
         attValPairs.push_back(&attValList->attval); // O(1)
-        attValTree.insert(key, 'x'); // O(1)
-        attValList->members.push_back(this); // O(1)
+        attValTree.insert(key, 'x');                // O(1)
+        attValList->members.push_back(this);        // O(1)
     }
 }
 

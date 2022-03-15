@@ -13,7 +13,6 @@
 #define TESTING_PERSONPROFILE       0
 #define TESTING_ATTRIBUTETRANSLATOR 0
 #define TESTING_MEMBERDATABASE      0
-#define TESTING_MATCHMAKER          1
 
 int main() {
     #if TESTING_RADIXTREE
@@ -98,12 +97,6 @@ int main() {
         for (std::string s : v) {
             std::cout << s << std::endl;
         }
-    }
-    #endif
-
-    #if TESTING_MATCHMAKER
-    {
-        MatchMaker mm;
     }
     #endif
 }
