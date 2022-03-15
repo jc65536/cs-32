@@ -21,9 +21,11 @@ bool MemberDatabase::LoadDatabase(std::string filename) {
 
         profileTree.insert(email, SharedPersonProfile(*this, name, email));
         SharedPersonProfile *profile = profileTree.search(email);
+        // Reset pointers, otherwise the copy in the tree would be pointing to
+        // freed memory
         profile->resetTree();
 
-        std::getline(in, name);
+        std::getline(in, name); // Consume newline
         std::string line, attribute, value;
         for (int i = 0; i < attValCount; i++) {
             std::getline(in, line);
@@ -34,7 +36,9 @@ bool MemberDatabase::LoadDatabase(std::string filename) {
             value = line.substr(comma + 1);
             profile->AddAttValPair({attribute, value});
         }
-        std::getline(in, name);
+        std::getline(in, name); // Consume blank line
+
+        profile->resetTree(); // We don't need the tree anymore
     }
 
     return true;
@@ -85,11 +89,4 @@ bool MemberDatabase::SharedPersonProfile::GetAttVal(int attribute_num, AttValPai
 
     attval = *attValPairs[attribute_num];
     return true;
-}
-
-void MemberDatabase::print() {
-    std::cout << "profileTree" << std::endl;
-    profileTree.print(SharedPersonProfile::toString);
-    std::cout << std::endl << "attValListTree" << std::endl;
-    attValListTree.print(AttValMemberList::toString);
 }

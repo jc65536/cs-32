@@ -79,7 +79,6 @@ int main() {
     {
         MemberDatabase md;
         assert(md.LoadDatabase("test-memberdatabase.txt"));
-        md.print();
 
         const PersonProfile &p = *md.GetMemberByEmail("AbFow2483@charter.net");
         std::cout << std::endl << p.GetName() << " " << p.GetEmail() << std::endl;

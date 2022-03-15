@@ -72,7 +72,3 @@ std::vector<AttValPair> AttributeTranslator::FindCompatibleAttValPairs(const Att
 
     return results;
 }
-
-void AttributeTranslator::print() {
-    attValTree.print(listToString);
-}

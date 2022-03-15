@@ -1,6 +1,5 @@
-#include <set>
-#include <string>
 #include <unordered_set>
+#include <string>
 #include <vector>
 
 #include "AttributeTranslator.h"
@@ -9,11 +8,15 @@
 #include "PersonProfile.h"
 #include "provided.h"
 
-struct AttValComp {
-    bool operator()(const AttValPair &a, const AttValPair &b) const {
-        return attValToString(a) < attValToString(b);
+struct AttValHash {
+    bool operator()(const AttValPair &attval) const {
+        return std::hash<std::string>()(attValToString(attval));
     }
 };
+
+bool compEmailCount(const EmailCount &a, const EmailCount &b) {
+    return a.count > b.count || a.count == b.count && a.email < b.email;
+}
 
 MatchMaker::MatchMaker(const MemberDatabase &mdb, const AttributeTranslator &at)
     : database(mdb), translator(at) {
@@ -25,7 +28,7 @@ std::vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int
     if (!profile)
         return results;
 
-    std::set<AttValPair, AttValComp> allCompat;
+    std::unordered_set<AttValPair, AttValHash> allCompat;
 
     int numAttValPairs = profile->GetNumAttValPairs();
     AttValPair attval;
@@ -36,7 +39,7 @@ std::vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int
     }
 
     RadixTree<int> matchCounts;
-    std::set<std::string> matchEmails;
+    std::list<std::string> matchEmails;
     for (const AttValPair &attval : allCompat) {
         std::vector<std::string> matches = database.FindMatchingMembers(attval);
         for (std::string email : matches) {
@@ -44,7 +47,7 @@ std::vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int
             if (count) {
                 (*count)++;
             } else {
-                matchEmails.insert(email);
+                matchEmails.push_back(email);
                 matchCounts.insert(email, 1);
             }
         }
@@ -56,6 +59,8 @@ std::vector<EmailCount> MatchMaker::IdentifyRankedMatches(std::string email, int
             results.push_back({email, *count});
         }
     }
+
+    std::sort(results.begin(), results.end(), compEmailCount);
 
     return results;
 }

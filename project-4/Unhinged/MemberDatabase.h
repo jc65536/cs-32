@@ -14,9 +14,6 @@ public:
     const PersonProfile *GetMemberByEmail(std::string email) const;
     std::vector<std::string> FindMatchingMembers(const AttValPair &input) const;
 
-    // REMOVE BEFORE SUBMISSION!!
-    void print();
-
 private:
     // Reuse AttValPair objects
     class SharedPersonProfile : public PersonProfile {
@@ -27,15 +24,9 @@ private:
         bool GetAttVal(int attribute_num, AttValPair &attval) const override;
 
         // Resets the root pointer in attValTree after being copied into profileTree
+        // Also helps save memory
         void resetTree() {
             attValTree = RadixTree<char>();
-        }
-
-        static std::string toString(const SharedPersonProfile &p) {
-            std::string ret = p.GetName() + " " + p.GetEmail();
-            for (AttValPair *a : p.attValPairs)
-                ret += ", " + attValToString(*a);
-            return ret;
         }
 
     private:
