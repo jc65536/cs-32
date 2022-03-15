@@ -23,10 +23,10 @@ public:
             delete n->value;
         } else {
             Node *&next = n->children[key[0]];
-            if (status == -1) {
+            if (status == -1) { // Just create a new node
                 n = newNode(key);
                 next = n;
-            } else {
+            } else { // Create a factor node for the new node and the existing node
                 Node *factor = newNode(key.substr(0, status));
                 key = key.substr(status);
                 std::string &nextSegment = next->segment;

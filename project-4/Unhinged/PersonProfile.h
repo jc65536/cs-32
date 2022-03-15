@@ -19,9 +19,9 @@ public:
         return email;
     }
 
-    void AddAttValPair(const AttValPair &attval);
-    int GetNumAttValPairs() const;
-    bool GetAttVal(int attribute_num, AttValPair &attval) const;
+    virtual void AddAttValPair(const AttValPair &attval);
+    virtual int GetNumAttValPairs() const;
+    virtual bool GetAttVal(int attribute_num, AttValPair &attval) const;
 
 private:
     std::string name;

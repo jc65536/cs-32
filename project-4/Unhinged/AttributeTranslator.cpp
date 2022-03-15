@@ -47,14 +47,14 @@ bool AttributeTranslator::Load(std::string filename) {
         } else {
             attValPairs.push_back(compat);
             compatPtr = &attValPairs.back();
-            attValTree.insert(compatKey, std::list<AttValPair *>{compatPtr});
+            attValTree.insert(compatKey, {compatPtr});
         }
 
         if (sourceList) { // source already exists in attValPairs
             sourceList->push_back(compatPtr);
         } else {
             attValPairs.push_back(source);
-            attValTree.insert(sourceKey, std::list<AttValPair *>{&attValPairs.back(), compatPtr});
+            attValTree.insert(sourceKey, {&attValPairs.back(), compatPtr});
         }
     }
 
@@ -62,15 +62,15 @@ bool AttributeTranslator::Load(std::string filename) {
 }
 
 std::vector<AttValPair> AttributeTranslator::FindCompatibleAttValPairs(const AttValPair &source) const {
-    std::vector<AttValPair> result;
+    std::vector<AttValPair> results;
     std::list<AttValPair *> *list = attValTree.search(attValToString(source));
     if (!list)
-        return result;
-    
-    for (auto it = ++list->begin(); it != list->end(); it++)
-        result.push_back(**it);
+        return results;
 
-    return result;
+    for (auto it = ++list->begin(); it != list->end(); it++)
+        results.push_back(**it);
+
+    return results;
 }
 
 void AttributeTranslator::print() {

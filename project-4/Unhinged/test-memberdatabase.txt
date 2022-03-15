@@ -1,0 +1,27 @@
+Abdullah Fowler
+AbFow2483@charter.net
+3
+job,architect
+hobby,canyoneering
+hobby,slacklining
+
+Mordechai Hayes
+MHa7@sky.com
+3
+job,accountant
+hobby,origami
+trait,narrow
+
+Titan Adkins
+TiAdkins81471@charter.net
+3
+job,librarian
+hobby,canyoneering
+hobby,martial arts
+
+Emilio Tyson
+EmiliTy3@charter.net
+3
+job,doctor
+hobby,surfing
+hobby,kayaking

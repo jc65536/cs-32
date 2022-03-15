@@ -1,6 +1,6 @@
 OBJECTS = AttributeTranslator.o MatchMaker.o MemberDatabase.o PersonProfile.o utility.o
 HEADERS = $(wildcard *.h)
-OPTIONS = -g -fsanitize=address
+OPTIONS = -std=c++17 -g -fsanitize=undefined
 
 .PHONY: clean
 

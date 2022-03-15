@@ -1,0 +1,2 @@
+- Do not copy a RadixTree
+- Do not copy a PersonProfile

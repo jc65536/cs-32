@@ -9,6 +9,4 @@
 
 std::string attValToString(AttValPair attval);
 
-std::string listToString(const std::list<AttValPair *> &list);
-
 #endif // Include guard
