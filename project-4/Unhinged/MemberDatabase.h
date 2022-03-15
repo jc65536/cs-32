@@ -23,15 +23,19 @@ private:
         int GetNumAttValPairs() const override;
         bool GetAttVal(int attribute_num, AttValPair &attval) const override;
 
-        // Resets the root pointer in attValTree after being copied into profileTree
-        // Also helps save memory
-        void resetTree() {
-            attValTree = RadixTree<char>();
+        // Creates a new attValTree after being copied into profileTree
+        void createTree() {
+            attValTree = new RadixTree<char>();
+        }
+
+        // Delete attValTree to save memory
+        void deleteTree() {
+            delete attValTree;
         }
 
     private:
         std::vector<AttValPair *> attValPairs;
-        RadixTree<char> attValTree;
+        RadixTree<char> *attValTree;
         MemberDatabase &database;
     };
 

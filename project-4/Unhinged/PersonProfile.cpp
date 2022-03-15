@@ -5,15 +5,23 @@
 #include "utility.h"
 
 PersonProfile::PersonProfile(std::string name, std::string email)
-    : name(name), email(email) {}
+    : name(name), email(email), attValTree(nullptr) {}
+
+PersonProfile::~PersonProfile() {
+    delete attValTree;
+}
 
 // Complexity: O(1)
 void PersonProfile::AddAttValPair(const AttValPair &attval) {
+    // Only initialize tree when needed to save memory
+    if (!attValTree)
+        attValTree = new RadixTree<char>();
+
     std::string key = attValToString(attval);
-    char *exists = attValTree.search(key); // O(1)
+    char *exists = attValTree->search(key); // O(1)
     if (!exists) {
         attValPairs.push_back(attval); // O(1)
-        attValTree.insert(key, 'x');   // O(1)
+        attValTree->insert(key, 'x');   // O(1)
     }
 }
 

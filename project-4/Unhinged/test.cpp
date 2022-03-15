@@ -10,7 +10,7 @@
 #include "MatchMaker.h"
 
 #define TESTING_RADIXTREE           0
-#define TESTING_PERSONPROFILE       0
+#define TESTING_PERSONPROFILE       1
 #define TESTING_ATTRIBUTETRANSLATOR 0
 #define TESTING_MEMBERDATABASE      0
 

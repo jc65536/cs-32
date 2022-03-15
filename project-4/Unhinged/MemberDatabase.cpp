@@ -23,7 +23,7 @@ bool MemberDatabase::LoadDatabase(std::string filename) {
         SharedPersonProfile *profile = profileTree.search(email);
         // Reset the root pointer of the copy in the tree, otherwise it would be
         // pointing to freed memory
-        profile->resetTree();
+        profile->createTree();
 
         std::getline(in, name); // Consume newline
         std::string line, attribute, value;
@@ -38,7 +38,7 @@ bool MemberDatabase::LoadDatabase(std::string filename) {
         }
         std::getline(in, name); // Consume blank line
 
-        profile->resetTree(); // We don't need the tree anymore
+        profile->deleteTree(); // We don't need the tree anymore
     }
 
     return true;
@@ -68,7 +68,7 @@ MemberDatabase::SharedPersonProfile::SharedPersonProfile(MemberDatabase &databas
 // Complexity: O(1)
 void MemberDatabase::SharedPersonProfile::AddAttValPair(const AttValPair &attval) {
     std::string key = attValToString(attval);
-    char *exists = attValTree.search(key); // O(1)
+    char *exists = attValTree->search(key); // O(1)
     if (!exists) {
         AttValMemberList *attValList = database.attValListTree.search(key); // O(1)
         if (!attValList) {                                                  // Database does not yet contain this AttValPair
@@ -76,7 +76,7 @@ void MemberDatabase::SharedPersonProfile::AddAttValPair(const AttValPair &attval
             attValList = database.attValListTree.search(key);               // O(1)
         }
         attValPairs.push_back(&attValList->attval); // O(1)
-        attValTree.insert(key, 'x');                // O(1)
+        attValTree->insert(key, 'x');               // O(1)
         attValList->members.push_back(this);        // O(1)
     }
 }
