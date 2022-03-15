@@ -26,7 +26,6 @@ int main() {
             rt.insert(line, i);
             i++;
         }
-        rt.print();
 
         std::cout << *rt.search("hello") << std::endl;
         std::cout << *rt.search("grate") << std::endl;
@@ -63,7 +62,6 @@ int main() {
     {
         AttributeTranslator at;
         at.Load("test-attributetranslator.txt");
-        at.print();
         auto v = at.FindCompatibleAttValPairs(AttValPair("favorite_food", "del taco"));
         for (auto p : v) {
             std::cout << attValToString(p) << std::endl;
