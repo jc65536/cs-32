@@ -70,7 +70,7 @@ void MemberDatabase::SharedPersonProfile::AddAttValPair(const AttValPair &attval
     if (!exists) {
         AttValMemberList *attValList = database.attValListTree.search(key);
         if (!attValList) { // Database does not yet contain this AttValPair
-            database.attValListTree.insert(key, {attval});
+            database.attValListTree.insert(key, {attval, {}});
             attValList = database.attValListTree.search(key);
         }
         attValPairs.push_back(&attValList->attval);

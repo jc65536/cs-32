@@ -22,7 +22,7 @@ public:
         if (status == 0) {
             delete n->value;
         } else {
-            Node *&next = n->children[key[0]];
+            Node *&next = n->children[(int) key[0]];
             if (status == -1) { // Just create a new node
                 n = newNode(key);
                 next = n;
@@ -36,10 +36,10 @@ public:
                     n = factor;
                 } else {
                     n = newNode(key);
-                    factor->children[key[0]] = n;
+                    factor->children[(int) key[0]] = n;
                 }
 
-                factor->children[nextSegment[0]] = next;
+                factor->children[(int) nextSegment[0]] = next;
                 next = factor;
             }
         }
@@ -97,7 +97,7 @@ private:
         }
 
         while (!key.empty()) {
-            Node *next = n->children[key[0]];
+            Node *next = n->children[(int) key[0]];
             if (!next)
                 return -1;
 

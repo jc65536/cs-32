@@ -15,7 +15,7 @@ struct AttValHash {
 };
 
 bool compEmailCount(const EmailCount &a, const EmailCount &b) {
-    return a.count > b.count || a.count == b.count && a.email < b.email;
+    return a.count > b.count || (a.count == b.count && a.email < b.email);
 }
 
 MatchMaker::MatchMaker(const MemberDatabase &mdb, const AttributeTranslator &at)

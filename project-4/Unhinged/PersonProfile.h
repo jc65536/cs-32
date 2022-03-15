@@ -10,6 +10,7 @@
 class PersonProfile {
 public:
     PersonProfile(std::string name, std::string email);
+    virtual ~PersonProfile() {}
 
     std::string GetName() const {
         return name;
