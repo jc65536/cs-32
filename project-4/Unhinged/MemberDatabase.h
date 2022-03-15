@@ -38,12 +38,6 @@ private:
     struct AttValMemberList {
         AttValPair attval;
         std::list<SharedPersonProfile *> members;
-        static std::string toString(const AttValMemberList &a) {
-            std::string ret = attValToString(a.attval);
-            for (SharedPersonProfile *p : a.members)
-                ret += ", " + p->GetName();
-            return ret;
-        }
     };
 
     RadixTree<SharedPersonProfile> profileTree;
